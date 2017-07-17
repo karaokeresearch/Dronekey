@@ -1,0 +1,10 @@
+audioFiles=[{filename:"Banjo2000.wav", note:"E"},
+{filename:"Bells4000.wav", note:"E"},
+{filename:"BlipB500.wav", note:"E"},
+{filename:"BlipF500.wav", note:"E"},
+{filename:"Guitar4000.wav",note:"E"},
+{filename:"ItalianAccordian500.wav",note:"E"},
+{filename:"Marimba1000.wav",note:"E"},
+{filename:"MutedGuitar500.wav",note:"E"},
+{filename:"Piano4000.wav",note:"E"},
+{filename:"Pizz2000.wav",note:"E"}];
