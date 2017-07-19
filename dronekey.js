@@ -18,7 +18,7 @@
 */
 
 
-var chord="C";
+var chord="C7";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -170,7 +170,7 @@ var noteValue={
 			var offset = noteValue[audioFiles[bank].note];
 			var rate;
 			if (bank<6){ //left side of the keyboard is lower octaves, generally
-				rate = Math.pow(2,(1+((chordNotes[slot]-offset)/12)))/2;
+				rate =     Math.pow(2,(1+(((chordNotes[slot]-offset)-12)/12)))/2;
 			}else{rate = Math.pow(2,(1+(((chordNotes[slot]-offset)+12)/12)))/2;}
 			
 			sound[bank].rate(rate);
