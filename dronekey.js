@@ -23,15 +23,31 @@ var iconSize=[];
 var chordNotes=[];
 var sound=[];
 var bgColor = "pink";
+var easingType="easeInCirc";
+var leftTop=[];
+var wiggle=2;
+var endOpacity=1;
+var shrinkRandomness=500;
+var migrate=true;
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
       if (iconSize[kNum] === undefined) {iconSize[kNum]=0;}
-
+    	leftRandom = (leftTop[kNum][0]) +(Math.random() *wiggle)-(wiggle/2);
+    	topRandom  = (leftTop[kNum][1]) +(Math.random() *wiggle)-(wiggle/2);
+      
+      if (migrate){
+      	leftTop[kNum][0] = leftRandom;
+      	leftTop[kNum][1] = topRandom;
+      }
+      
 			$("#k"+kNum).stop();//if currently animating, stop it
    	 	$("#k"+kNum).stop();//also again. Sometimes it gets confused
-    	$("#k"+kNum).animate({"width": (iconSize[kNum] +=40) + "px", opacity:1},100);//make it big, visible
-    	$("#k"+kNum).animate({"width": "0px", opacity:0},{duration:1000, step: function(now,fx) //immediately try shrinking, fading
+    	$("#k"+kNum).animate({left: leftRandom + "vw", top: topRandom + "vh", width: (iconSize[kNum] +=40) + "px", opacity:1},100);//make it big, visible
+    	leftRandom = (leftTop[kNum][0]) + Math.floor(Math.random()*wiggle)-(wiggle/2);
+    	topRandom = (leftTop[kNum][1]) + Math.floor(Math.random()*wiggle)-(wiggle/2);
+    
+    	$("#k"+kNum).animate({width: "0px", opacity:endOpacity},{duration:Math.floor(Math.random()*shrinkRandomness)+750, easing: easingType, step: function(now,fx) //immediately try shrinking, fading
     																																	{ 
     																																	if (fx.prop=="width")
     																																		{iconSize[kNum]=now;    																																
@@ -129,6 +145,9 @@ var noteValue={
     	for (r=0; r<4; r++){
     		var left =  ( ((100/11)*1) + ((100/11)*c));
     		var top = ( ((100/5)*1) + ((100/5)*r) );
+    		leftTop[i]=[];
+    		leftTop[i][0] = left;
+    		leftTop[i][1] = top;
     		var hexval = (i+208).toString(16);
         theGrid = theGrid + '<img class="arbitrary" id="k' + i +'" src="emoji/noto/'+ listOfSVGs[Math.floor(Math.random()*listOfSVGs.length)]+ '" style="left: ' +   left.toFixed(2)     + "vw"  + "; top: " + top.toFixed(2) +'vh">' + "\n";
        i++;
