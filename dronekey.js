@@ -18,7 +18,7 @@
 */
 
 
-var chord="C7";
+var chord="C";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -69,12 +69,12 @@ var findChordNotes = function (whichChord){ //Returns an array of all the note v
 	if(keepgoing){
 		
 		for (i=0; i< chord.notes().length; i++) {
-			chordNotes.push((chord.notes()[i].key()-1)%24);
+			chordNotes.push((chord.notes()[i].key()-37));
 		}
 		for (i=0; i< chord.notes().length; i++) {
-			chordNotes.push(((chord.notes()[i].key()+11)%24));
+			chordNotes.push(((chord.notes()[i].key()-25)));
 		}
-	chordNotes.sort(function(a, b){return a-b});
+	//chordNotes.sort(function(a, b){return a-b});
 	}
 	return chordNotes;
 };
