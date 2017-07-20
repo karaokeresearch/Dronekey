@@ -43,11 +43,15 @@ var embiggen=function(kNum){//key has been pressed, make it big.
       
 			$("#k"+kNum).stop();//if currently animating, stop it
    	 	$("#k"+kNum).stop();//also again. Sometimes it gets confused
-    	$("#k"+kNum).animate({left: leftRandom + "vw", top: topRandom + "vh", width: (iconSize[kNum] +=40) + "px", opacity:1},100);//make it big, visible
+   	 	var windowWidth = $( window ).width();
+   	 	if (iconSize[kNum]< (windowWidth/40)){var increaseSize=(windowWidth/20)}else{increaseSize=(windowWidth/40)} //makes the initial size bigger upon keypress
+
+   	 	
+    	$("#k"+kNum).animate({left: leftRandom + "vw", top: topRandom + "vh", width: (iconSize[kNum] +=increaseSize) + "px", opacity:1},100);//make it big, visible
     	leftRandom = (leftTop[kNum][0]) + Math.floor(Math.random()*wiggle)-(wiggle/2);
     	topRandom = (leftTop[kNum][1]) + Math.floor(Math.random()*wiggle)-(wiggle/2);
     
-    	$("#k"+kNum).animate({width: "0px", opacity:endOpacity},{duration:Math.floor(Math.random()*shrinkRandomness)+750, easing: easingType, step: function(now,fx) //immediately try shrinking, fading
+    	$("#k"+kNum).animate({width: "0px", opacity:endOpacity},{duration:Math.floor(Math.random()*shrinkRandomness)+1000, easing: $.bez([0.430, 0.520, 0.970, 0.340]), step: function(now,fx) //immediately try shrinking, fading
     																																	{ 
     																																	if (fx.prop=="width")
     																																		{iconSize[kNum]=now;    																																
