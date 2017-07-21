@@ -121,24 +121,37 @@ var noteValue={
 
 
 	$( document ).ready(function() { //let's do this!
-    console.log( "ready!" );
-	
-	for (i=0;i<10;i++){ //load all the samples
-		  if(stereo){
-			  sound[i] = new Howl({
-		      src: ['samples/'+ audioFiles[i].filename],
-		      stereo: -0.5+(i*0.1),
-		      volume:0.6
-		    });
-			}else{
-		
-			 sound[i] = new Howl({
-	      src: ['samples/'+ audioFiles[i].filename],
-	      volume:0.6
-	    });
-	  }
-	  }
-	
+		   console.log( "ready!" );
+		   
+	  //let's load some instruments!
+	  chordNotes=findChordNotes(chord);	   
+		var k=0;
+		for (i=0;i<10;i++){ //bank
+			for (j=0;j<4;j++){ //slot
+					 var offset = noteValue[audioFiles[i].note];
+					var rate;
+					if (i<6){ //left side of the keyboard is lower octaves, generally
+						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;
+					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)+12)/12)))/2;}
+								
+				if(stereo){
+					sound[k] = new Howl({
+						src: ['samples/'+ audioFiles[i].filename],
+						stereo: -0.5+(i*0.1),
+						volume:0.6,
+						rate:rate
+					});
+				}else{
+					sound[k] = new Howl({
+						src: ['samples/'+ audioFiles[i].filename],
+						volume:0.6,
+						rate:rate
+					});
+				}
+			k++;
+			}	
+		}
+
 	tuna = new Tuna(Howler.ctx) //prepare reverb
 	var delay = new tuna.Delay({
 	    feedback: 0.6,    //0 to 1+
@@ -150,7 +163,7 @@ var noteValue={
 	});
 	//Howler.addEffect(delay) //uncomment this for delay effects
     
-    chordNotes=findChordNotes(chord);
+
 	
 	
     var theGrid='<div style="height: 100vh; background-color:' + bgColor +  ' ;">'; //load up the grid of random emojis
@@ -174,21 +187,9 @@ var noteValue={
      actualKey = (event.which);
     
      if (keyMap[actualKey]>-1){
-
 			launchIntoFullscreen(document.documentElement); // the whole page
 			embiggen(keyMap[actualKey]);
-			
-			var bank = Math.floor((keyMap[actualKey])/4);
-			var slot = ((keyMap[actualKey])%4);
-			
-			var offset = noteValue[audioFiles[bank].note];
-			var rate;
-			if (bank<6){ //left side of the keyboard is lower octaves, generally
-				rate =     Math.pow(2,(1+(((chordNotes[slot]-offset)-12)/12)))/2;
-			}else{rate = Math.pow(2,(1+(((chordNotes[slot]-offset)+12)/12)))/2;}
-			
-			sound[bank].rate(rate);
-			sound[bank].play();
+			sound[keyMap[actualKey]].play();
 			
 		}
 	});
