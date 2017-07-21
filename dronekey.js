@@ -30,6 +30,7 @@ var endOpacity=1;
 var shrinkRandomness=500;
 var migrate=true;
 var stereo=true;
+var fx=false;
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
@@ -151,18 +152,18 @@ var noteValue={
 			k++;
 			}	
 		}
-
+if (fx){
 	tuna = new Tuna(Howler.ctx) //prepare reverb
 	var delay = new tuna.Delay({
 	    feedback: 0.6,    //0 to 1+
-	    delayTime: 130,    //1 to 10000 milliseconds
+	    delayTime: 300,    //1 to 10000 milliseconds
 	    wetLevel: 0.5,    //0 to 1+
 	    dryLevel: 1,       //0 to 1+
 	    cutoff: 2000,      //cutoff frequency of the built in lowpass-filter. 20 to 22050
 	    bypass: 0
 	});
-	//Howler.addEffect(delay) //uncomment this for delay effects
-    
+	Howler.addEffect(delay) //uncomment this for delay effects
+}    
 
 	
 	
