@@ -18,7 +18,7 @@
 */
 
 
-var chord="C7";
+var chord="C";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -29,6 +29,7 @@ var wiggle=2;
 var endOpacity=1;
 var shrinkRandomness=500;
 var migrate=true;
+var stereo=true;
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
@@ -123,10 +124,19 @@ var noteValue={
     console.log( "ready!" );
 	
 	for (i=0;i<10;i++){ //load all the samples
+		  if(stereo){
+			  sound[i] = new Howl({
+		      src: ['samples/'+ audioFiles[i].filename],
+		      stereo: -0.5+(i*0.1),
+		      volume:0.6
+		    });
+			}else{
+		
 			 sound[i] = new Howl({
 	      src: ['samples/'+ audioFiles[i].filename],
 	      volume:0.6
 	    });
+	  }
 	  }
 	
 	tuna = new Tuna(Howler.ctx) //prepare reverb
