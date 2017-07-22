@@ -1,8 +1,8 @@
-# Drone Key
+# Emojidrone
 
 Insanity. Download, place everything on a web server, visit the URL. Won't work on the local file system for some reason.
 
-Edit dronekey.js to change pitch, turn on effects, change background color, etc. For background color, pink is the default. Change to #00ff00 to use a chromakey for visual overlay or black for projecting over performers.
+Edit emojidrone.js to change pitch, turn on effects, change background color, etc. For background color, pink is the default. Change to #00ff00 to use a chromakey for visual overlay or black for projecting over performers.
 
 ## Instructions
 
