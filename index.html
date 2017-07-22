@@ -20,7 +20,11 @@
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 
 <style>
-	
+	@font-face {
+    font-family: Bitstream Vera Sans Mono;
+    src: url('VeraMono.eot?') format('embedded-opentype'),
+    url('VeraMono.ttf') format('truetype');
+}
 	
 		
 	body {
@@ -29,8 +33,12 @@
 	    position: fixed; 
       overflow-y: scroll;
       width: 100%;
+      font-family: Bitstream Vera Sans Mono;
 	}
 	
+   input, button {font-family: inherit; 
+   	                        font-size: inherit;}
+   
 	.arbitrary {
 		width: 0vw;
 	  position: absolute;
@@ -38,6 +46,16 @@
 	  overflow: hidden;
 	}
 	
+	#mainmenu{		
+		background-color: #FFFFFF;
+		font-size:3vh; 
+		top: 75vh; 
+		left:50vw; 
+		width:auto;
+		padding: 1vw;
+		border: 0.3vw solid black;;
+	}
+
 
 </style>
 

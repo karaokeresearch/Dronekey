@@ -18,7 +18,7 @@
 */
 
 
-var chord="C";
+var chord="Eaug9";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -31,6 +31,8 @@ var shrinkRandomness=500;
 var migrate=true;
 var stereo=true;
 var fx=false;
+var params={};location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){params[k]=v});
+var chord=params["chord"];
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
@@ -181,7 +183,18 @@ if (fx){
        i++;
        }
     }
+     
+     
+     if (!params["chord"]){  
+     theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
+     theGrid = theGrid +'<br><form action="index.html">Chord name: <input type="text" style="width:5vw" name="chord" value="Cm7"> 	<button type="submit">Play!</button></form>';
      theGrid = theGrid +'</div>';
+   } 
+     
+     
+     theGrid = theGrid +'</div>';
+
+     ;
      $(document.body).html(theGrid); //render the emoji html
     
   	$(document).on('keydown', function(event) {//key is pressed
