@@ -18,7 +18,7 @@
 */
 
 
-var chord="Eaug9";
+var chord="Cm7";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -32,7 +32,7 @@ var migrate=true;
 var stereo=true;
 var fx=false;
 var params={};location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){params[k]=v});
-var chord=params["chord"];
+
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
@@ -101,6 +101,16 @@ var launchIntoFullscreen = function(element) {
 };
 
 
+
+	  
+
+
+
+
+
+
+
+
 var noteValue={
 	"A"  :0,
 	"A#" :1,
@@ -121,13 +131,9 @@ var noteValue={
 	"Ab" :11	
 };
 
-
-
-	$( document ).ready(function() { //let's do this!
-		   console.log( "ready!" );
-		   
-	  //let's load some instruments!
-	  chordNotes=findChordNotes(chord);	   
+var loadInstrument = function(){
+ var chordNotes=findChordNotes(chord);	 
+ console.log(chord);  
 		var k=0;
 		for (i=0;i<10;i++){ //bank
 			for (j=0;j<4;j++){ //slot
@@ -136,7 +142,8 @@ var noteValue={
 					if (i<6){ //left side of the keyboard is lower octaves, generally
 						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;
 					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)+12)/12)))/2;}
-								
+			
+				if(sound[k]){sound[k].unload()};	
 				if(stereo){
 					sound[k] = new Howl({
 						src: ['samples/'+ audioFiles[i].filename],
@@ -154,6 +161,15 @@ var noteValue={
 			k++;
 			}	
 		}
+}	
+
+
+	$( document ).ready(function() { //let's do this!
+		   console.log( "ready!" );
+		   
+	  //let's load some instruments!
+	  loadInstrument();
+	 
 if (fx){
 	tuna = new Tuna(Howler.ctx) //prepare reverb
 	var delay = new tuna.Delay({
@@ -187,26 +203,42 @@ if (fx){
      
      if (!params["chord"]){  
      theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
-     theGrid = theGrid +'<br><form action="index.html">Chord name: <input type="text" style="width:5vw" name="chord" value="Cm7"> 	<button type="submit">Play!</button></form>';
+     theGrid = theGrid +'<br>Chord name: <input type="text" style="width:7vw" id="chordname" value="Cm7"> <button id="playbutton">Play!</button>';
      theGrid = theGrid +'</div>';
    } 
      
      
      theGrid = theGrid +'</div>';
 
-     ;
+   
      $(document.body).html(theGrid); //render the emoji html
     
   	$(document).on('keydown', function(event) {//key is pressed
      actualKey = (event.which);
     
      if (keyMap[actualKey]>-1){
-			launchIntoFullscreen(document.documentElement); // the whole page
+			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
 			
 		}
 	});
+	
+	  $("#playbutton").click(function(event) {
+     chord=$("#chordname").val();
+     loadInstrument();
+     $("#mainmenu").animate({opacity:0},100);//
+     launchIntoFullscreen(document.documentElement); // the whole page
+    	
+    });
 	  
+	$( window ).resize(function() {
+	  var fullscreenElement = document.fullScreen ||  document.mozFullScreen || document.webkitIsFullScreen;;
+	  if (!fullscreenElement){
+	     $("#mainmenu").animate({opacity:1},100);//
+	  }
+	   
+	}); 
+	 
  
 });
