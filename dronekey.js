@@ -18,7 +18,7 @@
 */
 
 
-var chord="Cm7";
+var chord="Am";
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
@@ -203,7 +203,7 @@ if (fx){
      
      if (!params["chord"]){  
      theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
-     theGrid = theGrid +'<br>Chord name: <input type="text" style="width:7vw" id="chordname" value="Cm7"> <button id="playbutton">Play!</button>';
+     theGrid = theGrid +'<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am"> <button id="playbutton">Go!</button><br><span style="font-size:2vh;"><i>start typing!</i></span>';
      theGrid = theGrid +'</div>';
    } 
      
@@ -220,14 +220,14 @@ if (fx){
 			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
-			
+		console.log(	keyMap[actualKey]);
 		}
 	});
 	
 	  $("#playbutton").click(function(event) {
      chord=$("#chordname").val();
      loadInstrument();
-     $("#mainmenu").animate({opacity:0},100);//
+     	     $("#mainmenu").css("visibility", "hidden");
      launchIntoFullscreen(document.documentElement); // the whole page
     	
     });
@@ -235,7 +235,7 @@ if (fx){
 	$( window ).resize(function() {
 	  var fullscreenElement = document.fullScreen ||  document.mozFullScreen || document.webkitIsFullScreen;;
 	  if (!fullscreenElement){
-	     $("#mainmenu").animate({opacity:1},100);//
+	     $("#mainmenu").css("visibility", "visible");
 	  }
 	   
 	}); 
