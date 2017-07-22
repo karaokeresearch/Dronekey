@@ -133,7 +133,6 @@ var noteValue={
 
 var loadInstrument = function(){
  var chordNotes=findChordNotes(chord);	 
- console.log(chord);  
 		var k=0;
 		for (i=0;i<10;i++){ //bank
 			for (j=0;j<4;j++){ //slot
@@ -162,6 +161,16 @@ var loadInstrument = function(){
 			}	
 		}
 }	
+
+function exitHandler() //what happens when you enter or exit full screen
+	{
+	    if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement)
+	    { 
+	        $("#mainmenu").css("visibility", "hidden");
+	    }else { 	$("#mainmenu").css("visibility", "visible");}
+	}
+
+
 
 
 	$( document ).ready(function() { //let's do this!
@@ -220,25 +229,33 @@ if (fx){
 			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
-		console.log(	keyMap[actualKey]);
 		}
 	});
 	
 	  $("#playbutton").click(function(event) {
      chord=$("#chordname").val();
      loadInstrument();
-     	     $("#mainmenu").css("visibility", "hidden");
+    
      launchIntoFullscreen(document.documentElement); // the whole page
     	
     });
-	  
-	$( window ).resize(function() {
-	  var fullscreenElement = document.fullScreen ||  document.mozFullScreen || document.webkitIsFullScreen;;
-	  if (!fullscreenElement){
-	     $("#mainmenu").css("visibility", "visible");
-	  }
-	   
-	}); 
+
+	
+		if (document.addEventListener) //trigger if fullscreen happens
+	{
+	    document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	    document.addEventListener('mozfullscreenchange', exitHandler, false);
+	    document.addEventListener('fullscreenchange', exitHandler, false);
+	    document.addEventListener('MSFullscreenChange', exitHandler, false);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	 
  
 });
