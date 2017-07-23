@@ -18,7 +18,7 @@ Z  X  C  V  B  N  M  ,  .  /
 ### Why?
 I designed Emojidrone for playing improvised music where some or all of the performers are playing in the same key, ideally when an insane simulataneous visual component is desired as well. 
 
-#### Uses
+### Uses
 Even if you don't consider yourself a musician, you can learn to play Emojidrone in a matter of seconds. Emojidrone is fun to play in your living room with a friend on guitar or piano, or even by yourself on lunch break. Change the background color to black, hook it up to a projector, and use it on stage Switch the background color to #00FF00, chromakey it out, and use it to generate live insane overlays for your TV show!
 
 
