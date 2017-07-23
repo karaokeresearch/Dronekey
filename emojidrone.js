@@ -36,7 +36,6 @@ var sound=[];
 var chord="Am";
 var params={};location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){params[k]=v});
 
-
 var embiggen=function(kNum){//key has been pressed, make it big.
 
       if (iconSize[kNum] === undefined) {iconSize[kNum]=0;}
@@ -134,6 +133,8 @@ var noteValue={
 	"Ab" :11	
 };
 
+
+
 var loadInstrument = function(){
  var chordNotes=findChordNotes(chord);	 
 		var k=0;
@@ -147,22 +148,41 @@ var loadInstrument = function(){
 			
 				if(sound[k]){sound[k].unload()};	
 				if(stereo){
-					sound[k] = new Howl({
+					var howlParams={
 						src: ['samples/'+ audioFiles[i].filename],
 						stereo: -0.5+(i*0.1),
 						volume:0.6,
-						rate:rate
-					});
+						rate:rate	
+					};
+					(function(hp,kay){ //stupid closures because javascript was designed by genius morons. 
+			
+						$(document.body).queue( "audioLoad", function( next ) {//if we load the sounds sequentially, it uses 75% less bandwidth
+								hp.onload=next;
+								sound[kay] = new Howl(hp);
+						});	
+					})(howlParams,k);
+					
+					
 				}else{
-					sound[k] = new Howl({
+				var howlParams={
 						src: ['samples/'+ audioFiles[i].filename],
 						volume:0.6,
-						rate:rate
-					});
+						rate:rate	
+					};
+					(function(hp,kay){
+			
+						$(document.body).queue( "audioLoad", function( next ) {
+								hp.onload=next;
+								sound[kay] = new Howl(hp);
+						});	
+					})(howlParams,k);
+						
+					
 				}
 			k++;
 			}	
 		}
+$(document.body).dequeue("audioLoad");
 }	
 
 function exitHandler() //what happens when you enter or exit full screen
