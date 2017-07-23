@@ -9,10 +9,10 @@ A browser-based musical instrument that also makes silly emoji graphics. A sound
 Once the page is loaded, start typing to trigger the sounds and emojis. The keyboard is broken into ten columns each representing a single instrument broken into four of the individual notes of the active chord. In the case of chords with three notes, the bottom row plays one octave over the root note.
 
 ```
-1  2  3  4  5  6  7  8  9  0
-Q  W  E  R  T  Y  U  I  O  P
-A  S  D  F  G  H  J  K  L  ;
-Z  X  C  V  B  N  M  ,  .  /
+1   2   3   4   5   6   7   8   9   0
+Q   W   E   R   T   Y   U   I   O   P
+A   S   D   F   G   H   J   K   L   ;
+Z   X   C   V   B   N   M   ,   .   /
 ```
 
 ### Why?
