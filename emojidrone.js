@@ -223,8 +223,9 @@ if (fx){
      $(document.body).html(theGrid); //render the emoji html
     
   	$(document).on('keydown', function(event) {//key is pressed
+  		
      actualKey = (event.which);
-    
+     if (actualKey==191){event.preventDefault()}
      if (keyMap[actualKey]>-1){
 			
 			embiggen(keyMap[actualKey]);
