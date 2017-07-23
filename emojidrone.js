@@ -17,20 +17,23 @@
 
 */
 
+//edit these parameters to change behavior
+var bgColor = "pink";
+var wiggle=2;             //how much does it wiggle around when you hit a key
+var migrate=true;         //does it stay in place mostly? If true, it might even migrate off the screen eventually!
+var endOpacity=1;         //fade out when shrinking? (works poorly for green screen)
+var shrinkRandomness=500; //adds extra randomness to shrink time to make things feel more organic.
+var stereo=true;          //left-right stereo. Change to false for mono output
+var fx=false;             //load the effects module?
 
-var chord="Am";
+//end user-settable parameters
+
+
+var leftTop=[];
 var iconSize=[];
 var chordNotes=[];
 var sound=[];
-var bgColor = "pink";
-var easingType="easeInCirc";
-var leftTop=[];
-var wiggle=2;
-var endOpacity=1;
-var shrinkRandomness=500;
-var migrate=true;
-var stereo=true;
-var fx=false;
+var chord="Am";
 var params={};location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){params[k]=v});
 
 
