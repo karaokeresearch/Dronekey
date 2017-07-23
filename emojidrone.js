@@ -225,7 +225,7 @@ if (fx){
   	$(document).on('keydown', function(event) {//key is pressed
   		
      actualKey = (event.which);
-     if (actualKey==191){event.preventDefault()}
+     if (actualKey==191){event.preventDefault()} //disable default firefox slash key behavior
      if (keyMap[actualKey]>-1){
 			
 			embiggen(keyMap[actualKey]);
