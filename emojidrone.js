@@ -139,20 +139,21 @@ var loadInstrument = function(){
  var chordNotes=findChordNotes(chord);	 
 		var k=0;
 		for (i=0;i<10;i++){ //bank
+		  var r = Math.floor(Math.random()*audioFiles.length); //random instrument
 			for (j=0;j<4;j++){ //slot
-					 var offset = noteValue[audioFiles[i].note];
+					 var offset = noteValue[audioFiles[r].note];
 					var rate;
-					if (i<6){ //left side of the keyboard is lower octaves, generally
+					if (i<300){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
 						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;
 					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)+12)/12)))/2;}
 			
 				if(sound[k]){sound[k].unload()};	
 				if(stereo){
 					var howlParams={
-						src: ['samples/'+ audioFiles[i].filename],
+						src: ['samples/'+ audioFiles[r].filename],
 						stereo: -0.5+(i*0.1),
-						volume:0.6,
-						rate:rate	
+						volume:0.3,
+						rate:rate
 					};
 					(function(hp,kay){ //stupid closures because javascript was designed by genius morons. 
 			
@@ -166,7 +167,7 @@ var loadInstrument = function(){
 				}else{
 				var howlParams={
 						src: ['samples/'+ audioFiles[i].filename],
-						volume:0.6,
+						volume:0.3,
 						rate:rate	
 					};
 					(function(hp,kay){
@@ -253,6 +254,7 @@ if (fx){
 			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
+			console.log(sound[keyMap[actualKey]]._src); //log instrument name
 		}
 	});
 	

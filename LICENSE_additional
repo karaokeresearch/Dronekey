@@ -268,12 +268,8 @@ Noto Emoji svg and favicon files:
    
  ------
  
-The following sounds are derived from Frank Wen's Fluid (R3) SoundFont
-and are distributed under the MIT license:
-
-Banjo2000.ogg
-ItalianAccordian500.ogg
-Pizz2000.ogg
+All audio samples are derived from Frank Wen's Fluid (R3) SoundFont
+which is distributed under the MIT license:
 
 
 Copyright (c) 2000-2002, 2008 Frank Wen <getfrank@gmail.com>
