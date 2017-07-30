@@ -144,16 +144,18 @@ var loadInstrument = function(){
 			for (j=0;j<4;j++){ //slot
 					 var offset = noteValue[myAudioFiles[r].note];
 					var rate;
-					if (i<300){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
-						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;
-					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)+12)/12)))/2;}
+					if (i<-1){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
+						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-24)/12)))/2;
+					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;}
 			
-				if(sound[k]){sound[k].unload()};	
+				if(sound[k]){sound[k].unload()};
+				
+				if (!myAudioFiles[r].volume){var myVolume=1}else {var myVolume=myAudioFiles[r].volume}	
 				if(stereo){
 					var howlParams={
 						src: ['samples/'+ myAudioFiles[r].filename],
 						stereo: -0.5+(i*0.1),
-						volume:0.3,
+						volume:0.3*myVolume,
 						rate:rate
 					};
 					(function(hp,kay){ //stupid closures because javascript was designed by genius morons. 
@@ -168,7 +170,7 @@ var loadInstrument = function(){
 				}else{
 				var howlParams={
 						src: ['samples/'+ myAudioFiles[i].filename],
-						volume:0.3,
+						volume:0.3 * myVolume,
 						rate:rate	
 					};
 					(function(hp,kay){
