@@ -136,12 +136,13 @@ var noteValue={
 
 
 var loadInstrument = function(){
+ var myAudioFiles=audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
  var chordNotes=findChordNotes(chord);	 
 		var k=0;
 		for (i=0;i<10;i++){ //bank
-		  var r = Math.floor(Math.random()*audioFiles.length); //random instrument
+		  var r = Math.floor(Math.random()*myAudioFiles.length); //random instrument
 			for (j=0;j<4;j++){ //slot
-					 var offset = noteValue[audioFiles[r].note];
+					 var offset = noteValue[myAudioFiles[r].note];
 					var rate;
 					if (i<300){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
 						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;
@@ -150,7 +151,7 @@ var loadInstrument = function(){
 				if(sound[k]){sound[k].unload()};	
 				if(stereo){
 					var howlParams={
-						src: ['samples/'+ audioFiles[r].filename],
+						src: ['samples/'+ myAudioFiles[r].filename],
 						stereo: -0.5+(i*0.1),
 						volume:0.3,
 						rate:rate
@@ -166,7 +167,7 @@ var loadInstrument = function(){
 					
 				}else{
 				var howlParams={
-						src: ['samples/'+ audioFiles[i].filename],
+						src: ['samples/'+ myAudioFiles[i].filename],
 						volume:0.3,
 						rate:rate	
 					};
@@ -181,7 +182,8 @@ var loadInstrument = function(){
 					
 				}
 			k++;
-			}	
+			}
+		myAudioFiles.splice(r,1);
 		}
 $(document.body).dequeue("audioLoad");
 }	
@@ -213,7 +215,7 @@ if (fx){
 	    cutoff: 2000,      //cutoff frequency of the built in lowpass-filter. 20 to 22050
 	    bypass: 0
 	});
-	Howler.addEffect(delay) //uncomment this for delay effects
+	Howler.addEffect(delay) //delay effects
 }    
 
 	
