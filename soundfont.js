@@ -27,9 +27,7 @@ audioFiles=[
 {filename: "synthplucka.wav", note:"C"},
 {filename: "tank.wav", note:"C"},
 {filename: "tickbell.wav", note:"C"},
-{filename: "tsongas.wav", note:"C"},
 {filename: "wasserman.wav", note:"C"},
 {filename: "waterbrass.wav", note:"C"},
-{filename: "wblurmp.wav", note:"C"},
 {filename: "whydotheydream.wav", note:"C"},
 {filename: "yanahaypianay.wav", note:"C"}];
