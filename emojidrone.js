@@ -18,7 +18,7 @@
 */
 
 //edit these parameters to change behavior
-var bgColor = "pink";
+var bgColor = "#00FF00";
 var wiggle=2;             //how much does it wiggle around when you hit a key
 var migrate=true;         //does it stay in place mostly? If true, it might even migrate off the screen eventually!
 var endOpacity=1;         //fade out when shrinking? (works poorly for green screen)
@@ -50,7 +50,7 @@ var embiggen=function(kNum){//key has been pressed, make it big.
 			$("#k"+kNum).stop();//if currently animating, stop it
    	 	$("#k"+kNum).stop();//also again. Sometimes it gets confused
    	 	var windowWidth = $( window ).width();
-   	 	if (iconSize[kNum]< (windowWidth/40)){var increaseSize=(windowWidth/20)}else{increaseSize=(windowWidth/40)} //makes the initial size bigger upon keypress
+   	 	if (iconSize[kNum]< (windowWidth/10)){var increaseSize=(windowWidth/5)-iconSize[kNum]}else{increaseSize=(windowWidth/15)} //makes the initial size bigger upon keypress
 
    	 	
     	$("#k"+kNum).animate({left: leftRandom + "vw", top: topRandom + "vh", width: (iconSize[kNum] +=increaseSize) + "px", opacity:1},100);//make it big, visible
