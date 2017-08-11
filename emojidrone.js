@@ -35,6 +35,7 @@ var chordNotes=[];
 var sound=[];
 var chord="Am";
 var params={};location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){params[k]=v});
+var category={};
 
 var embiggen=function(kNum){//key has been pressed, make it big.
 
@@ -203,6 +204,54 @@ function exitHandler() //what happens when you enter or exit full screen
 
 	$( document ).ready(function() { //let's do this!
 		   console.log( "ready!" );
+		   
+		   var maincat="";
+		   var subcat="";
+		   
+			 $.get('emoji/emoji-test.txt', function(data) {//read and parse the emoji-test.txt file to catagorize emojis
+				var arrayOfLines = data.match(/[^\r\n]+/g);
+				
+				for (var i =0; i<arrayOfLines.length; i++){
+				  var line=	arrayOfLines[i];
+					
+					if (result = 	line.match(/^\#/)){ //cat or subcat
+						if (result = line.match(/(\w*)group\: (.*)/)){
+					      var sub= result[1];
+								var cat = result[2];
+									if (sub!="sub"){ //it's a main category:
+									category[cat]={};
+									maincat = cat;
+								}else{ //subcat
+								  category[maincat][cat]={};
+								  subcat=cat;
+								}
+						}
+					}
+				
+					if (result = line.match(/^(.*);(.*)#(.*?)[^a-z]*(.*)/i)){ //regular line
+						sourcefile = result[1];
+						object = result[4];
+						sourcefile = sourcefile.replace(/\s+$/, "");	
+						sourcefile = sourcefile.replace(/\s/g, "_");
+						sourcefile = "emoji_u" + sourcefile + ".svg";
+						//object = object.replace(/[^a-z]/ig, "-");
+						object = object.replace(/^man /i, "person ");    //lump by action, not gender
+						object = object.replace(/^woman /i, "person ");
+						object = object.replace(/^men /i, "people ");    //lump by action, not gender
+						object = object.replace(/^women /i, "people ");						
+						object = object.replace(/\:.*/, ""); //all skin types together
+					  //console.log( maincat +"/" + subcat + "/"+ object +":" +sourcefile );
+					  if (maincat && subcat){
+					  	if (!category[maincat][subcat][object]){category[maincat][subcat][object]=[];}
+					  	if (listOfSVGs.indexOf(sourcefile.toLowerCase())>0){//it's in our pre-built list of available SVG resources
+					  		category[maincat][subcat][object].push(sourcefile);
+					  	}
+					  }
+					}
+					
+				}		
+			});   
+		   
 		   
 	  //let's load some instruments!
 	  loadInstrument();
