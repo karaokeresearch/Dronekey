@@ -28,7 +28,7 @@ var fx=false;             //load the effects module?
 
 //end user-settable parameters
 
-
+var reducedListOfSVGs=[];
 var leftTop=[];
 var iconSize=[];
 var chordNotes=[];
@@ -250,6 +250,65 @@ function exitHandler() //what happens when you enter or exit full screen
 					}
 					
 				}		
+
+
+				for (var key in category) {
+					if (category.hasOwnProperty(key)) {
+						if (key != "Symbols"){
+						
+							
+							for (var subkey in category[key]) {
+								if (category[key].hasOwnProperty(subkey)) {
+										
+										
+										for (var emoji in category[key][subkey]) {
+											if (category[key][subkey].hasOwnProperty(emoji)) {	
+												if (category[key][subkey][emoji].length>0){
+													var emojiArray = category[key][subkey][emoji];	
+													var randomFile = emojiArray[Math.floor(Math.random()*emojiArray.length)];
+													reducedListOfSVGs.push(randomFile);
+													//console.log(key+ " : " + subkey + " : " + emoji + " : " + randomFile);
+												}
+											}
+										}
+										
+								}
+							}
+							
+							
+							
+						}
+				  }
+				}	
+		
+    var theGrid='<div style="height: 100vh; background-color:' + bgColor +  ' ;">'; //load up the grid of random emojis
+    var i=0;
+    for (c=0; c<10; c++){
+    	for (r=0; r<4; r++){
+    		var left =  ( ((100/11)*1) + ((100/11)*c));
+    		var top = ( ((100/5)*1) + ((100/5)*r) );
+    		leftTop[i]=[];
+    		leftTop[i][0] = left;
+    		leftTop[i][1] = top;
+    		var hexval = (i+208).toString(16);
+        theGrid = theGrid + '<img class="arbitrary" id="k' + i +'" src="emoji/noto/'+ reducedListOfSVGs[Math.floor(Math.random()*reducedListOfSVGs.length)]+ '" style="left: ' +   left.toFixed(2)     + "vw"  + "; top: " + top.toFixed(2) +'vh">' + "\n";
+       i++;
+       }
+    }
+     
+     
+
+     theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
+     theGrid = theGrid +'<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am"> <button id="playbutton">Go!</button><br><span style="font-size:2vh;"><i>start typing!</i></span>';
+     theGrid = theGrid +'</div>';
+
+     
+     
+     theGrid = theGrid +'</div>';
+
+   
+     $(document.body).html(theGrid); //render the emoji html			
+				
 			});   
 		   
 		   
@@ -270,34 +329,7 @@ if (fx){
 }    
 
 	
-	
-    var theGrid='<div style="height: 100vh; background-color:' + bgColor +  ' ;">'; //load up the grid of random emojis
-    var i=0;
-    for (c=0; c<10; c++){
-    	for (r=0; r<4; r++){
-    		var left =  ( ((100/11)*1) + ((100/11)*c));
-    		var top = ( ((100/5)*1) + ((100/5)*r) );
-    		leftTop[i]=[];
-    		leftTop[i][0] = left;
-    		leftTop[i][1] = top;
-    		var hexval = (i+208).toString(16);
-        theGrid = theGrid + '<img class="arbitrary" id="k' + i +'" src="emoji/noto/'+ listOfSVGs[Math.floor(Math.random()*listOfSVGs.length)]+ '" style="left: ' +   left.toFixed(2)     + "vw"  + "; top: " + top.toFixed(2) +'vh">' + "\n";
-       i++;
-       }
-    }
-     
-     
-     if (!params["chord"]){  
-     theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
-     theGrid = theGrid +'<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am"> <button id="playbutton">Go!</button><br><span style="font-size:2vh;"><i>start typing!</i></span>';
-     theGrid = theGrid +'</div>';
-   } 
-     
-     
-     theGrid = theGrid +'</div>';
 
-   
-     $(document.body).html(theGrid); //render the emoji html
     
   	$(document).on('keydown', function(event) {//key is pressed
   		
