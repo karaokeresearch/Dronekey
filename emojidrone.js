@@ -255,7 +255,7 @@ function exitHandler() //what happens when you enter or exit full screen
 				for (var key in category) {
 					if (category.hasOwnProperty(key)) {
 						if (key != "Symbols"){
-						
+						console.log(key);
 							
 							for (var subkey in category[key]) {
 								if (category[key].hasOwnProperty(subkey)) {
@@ -307,7 +307,16 @@ function exitHandler() //what happens when you enter or exit full screen
      theGrid = theGrid +'</div>';
 
    
-     $(document.body).html(theGrid); //render the emoji html			
+     $(document.body).html(theGrid); //render the emoji html		
+     
+     $("#playbutton").click(function(event) {
+     chord=$("#chordname").val();
+     loadInstrument();
+    
+     launchIntoFullscreen(document.documentElement); // the whole page
+    	
+    });
+	
 				
 			});   
 		   
@@ -343,14 +352,7 @@ if (fx){
 		}
 	});
 	
-	  $("#playbutton").click(function(event) {
-     chord=$("#chordname").val();
-     loadInstrument();
-    
-     launchIntoFullscreen(document.documentElement); // the whole page
-    	
-    });
-
+	  
 	
 		if (document.addEventListener) //trigger if fullscreen happens
 	{
