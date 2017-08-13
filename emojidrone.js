@@ -307,7 +307,7 @@ function exitHandler() //what happens when you enter or exit full screen
 					  if (maincat && subcat){
 					  	if (!category[maincat][subcat][object]){category[maincat][subcat][object]=[];}
 					  	if (listOfSVGs.indexOf(sourcefile.toLowerCase())>0){//it's in our pre-built list of available SVG resources
-					  		category[maincat][subcat][object].push(sourcefile);
+					  		category[maincat][subcat][object].push(sourcefile.toLowerCase());
 					  	}
 					  }
 					}
