@@ -307,7 +307,10 @@ function exitHandler() //what happens when you enter or exit full screen
 					  if (maincat && subcat){
 					  	if (!category[maincat][subcat][object]){category[maincat][subcat][object]=[];}
 					  	if (listOfSVGs.indexOf(sourcefile.toLowerCase())>0){//it's in our pre-built list of available SVG resources
-					  		category[maincat][subcat][object].push(sourcefile.toLowerCase());
+					  		//console.log(maincat + " : " +subcat + " : " +object + " : " +sourcefile.toLowerCase())
+					  		if (object != "watch"){//firefox hates watch emojis. And who wouldn't.
+					  			category[maincat][subcat][object].push(sourcefile.toLowerCase());
+					  	 	}
 					  	}
 					  }
 					}
@@ -353,14 +356,14 @@ if (fx){
 
     
   	$(document).on('keydown', function(event) {//key is pressed
+  	 event.preventDefault(); //disable default firefox slash and apostrophe key behavior
   		
      actualKey = (event.which);
-     if (actualKey==191){event.preventDefault()} //disable default firefox slash key behavior
      if (keyMap[actualKey]>-1){
 			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
-			console.log(sound[keyMap[actualKey]]._src); //log instrument name
+			//console.log(sound[keyMap[actualKey]]._src); //log instrument name
 		}
 	});
 	
