@@ -356,14 +356,15 @@ if (fx){
 
     
   	$(document).on('keydown', function(event) {//key is pressed
-  	 event.preventDefault(); //disable default firefox slash and apostrophe key behavior
-  		
-     actualKey = (event.which);
+  	 actualKey = (event.which);
+  	 if (actualKey==191 || actualKey==222){event.preventDefault()} //disable default firefox slash and apostrophe key behavior
+     //console.log(actualKey);
+     
+     
      if (keyMap[actualKey]>-1){
-			
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
-			//console.log(sound[keyMap[actualKey]]._src); //log instrument name
+      console.log(sound[keyMap[actualKey]]._src); //log instrument name		
 		}
 	});
 	
