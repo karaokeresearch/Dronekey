@@ -18,7 +18,6 @@
 */
 
 //edit these parameters to change behavior
-var bgColor = "#00FF00";
 var wiggle=2;             //how much does it wiggle around when you hit a key
 var migrate=true;         //does it stay in place mostly? If true, it might even migrate off the screen eventually!
 var endOpacity=1;         //fade out when shrinking? (works poorly for green screen)
@@ -135,6 +134,65 @@ var noteValue={
 };
 
 
+var loadTheGrid = function(){
+	var theGrid="";
+
+    var i=0;
+    for (c=0; c<10; c++){
+    	for (r=0; r<4; r++){
+    		var left =  ( ((100/11)*1) + ((100/11)*c));
+    		var top = ( ((100/5)*1) + ((100/5)*r) );
+    		leftTop[i]=[];
+    		leftTop[i][0] = left;
+    		leftTop[i][1] = top;
+    		var hexval = (i+208).toString(16);
+	
+    		if (reducedListOfSVGs.length<1){generateReducedListOfSVGs()} //in case we ran out of emojis. Flags, for instance.
+    		
+    		var splicedFilename = reducedListOfSVGs.splice(reducedListOfSVGs.indexOf(reducedListOfSVGs[Math.floor(Math.random()*reducedListOfSVGs.length)]),1); //remove and retrieve a random value from an array
+        theGrid = theGrid + '<img class="arbitrary" id="k' + i +'" src="emoji/noto/'+ splicedFilename + '" style="left: ' +   left.toFixed(2)     + "vw"  + "; top: " + top.toFixed(2) +'vh">' + "\n";
+       i++;
+       }
+    }
+     
+
+   
+     $("#gridzone").html(theGrid); //render the emoji html	
+}
+
+var generateReducedListOfSVGs = function(){
+	reducedListOfSVGs=[];
+
+	console.log("---");
+	for (var key in category) {
+	
+		if (category.hasOwnProperty(key)) {
+			
+			if ( key == $("#emojitype").val() || ($("#emojitype").val()== "All emojis (except symbols)" &&  key != "Symbols" ) ){
+			console.log(key);
+				
+				for (var subkey in category[key]) {
+					if (category[key].hasOwnProperty(subkey)) {
+							
+							
+							for (var emoji in category[key][subkey]) {
+								if (category[key][subkey].hasOwnProperty(emoji)) {	
+									if (category[key][subkey][emoji].length>0){
+										var emojiArray = category[key][subkey][emoji];	
+										var randomFile = emojiArray[Math.floor(Math.random()*emojiArray.length)];
+										reducedListOfSVGs.push(randomFile);
+										//console.log(key+ " : " + subkey + " : " + emoji + " : " + randomFile);
+									}
+								}
+							}
+						}
+				}				
+			}
+	  }
+	}	
+	
+	
+};
 
 var loadInstrument = function(){
  var myAudioFiles=audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
@@ -191,6 +249,8 @@ var loadInstrument = function(){
 $(document.body).dequeue("audioLoad");
 }	
 
+
+
 function exitHandler() //what happens when you enter or exit full screen
 	{
 	    if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement)
@@ -204,6 +264,9 @@ function exitHandler() //what happens when you enter or exit full screen
 
 	$( document ).ready(function() { //let's do this!
 		   console.log( "ready!" );
+		 
+
+ 
 		   
 		   var maincat="";
 		   var subcat="";
@@ -252,75 +315,24 @@ function exitHandler() //what happens when you enter or exit full screen
 				}		
 
 
-				for (var key in category) {
-					if (category.hasOwnProperty(key)) {
-						if (key != "Symbols"){
-						console.log(key);
-							
-							for (var subkey in category[key]) {
-								if (category[key].hasOwnProperty(subkey)) {
-										
-										
-										for (var emoji in category[key][subkey]) {
-											if (category[key][subkey].hasOwnProperty(emoji)) {	
-												if (category[key][subkey][emoji].length>0){
-													var emojiArray = category[key][subkey][emoji];	
-													var randomFile = emojiArray[Math.floor(Math.random()*emojiArray.length)];
-													reducedListOfSVGs.push(randomFile);
-													//console.log(key+ " : " + subkey + " : " + emoji + " : " + randomFile);
-												}
-											}
-										}
-										
-								}
-							}
-							
-							
-							
-						}
-				  }
-				}	
+		generateReducedListOfSVGs();
+		loadTheGrid();
 		
-    var theGrid='<div style="height: 100vh; background-color:' + bgColor +  ' ;">'; //load up the grid of random emojis
-    var i=0;
-    for (c=0; c<10; c++){
-    	for (r=0; r<4; r++){
-    		var left =  ( ((100/11)*1) + ((100/11)*c));
-    		var top = ( ((100/5)*1) + ((100/5)*r) );
-    		leftTop[i]=[];
-    		leftTop[i][0] = left;
-    		leftTop[i][1] = top;
-    		var hexval = (i+208).toString(16);
-        theGrid = theGrid + '<img class="arbitrary" id="k' + i +'" src="emoji/noto/'+ reducedListOfSVGs[Math.floor(Math.random()*reducedListOfSVGs.length)]+ '" style="left: ' +   left.toFixed(2)     + "vw"  + "; top: " + top.toFixed(2) +'vh">' + "\n";
-       i++;
-       }
-    }
+   	
      
-     
+     $("#playbutton").click(function(event) { 
+     	launchIntoFullscreen(document.documentElement); // the whole page
+	    chord=$("#chordname").val();
+	    loadInstrument();
+	    generateReducedListOfSVGs();
+		  loadTheGrid();
 
-     theGrid = theGrid + '<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>';
-     theGrid = theGrid +'<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am"> <button id="playbutton">Go!</button><br><span style="font-size:2vh;"><i>start typing!</i></span>';
-     theGrid = theGrid +'</div>';
-
-     
-     
-     theGrid = theGrid +'</div>';
-
-   
-     $(document.body).html(theGrid); //render the emoji html		
-     
-     $("#playbutton").click(function(event) {
-     chord=$("#chordname").val();
-     loadInstrument();
-    
-     launchIntoFullscreen(document.documentElement); // the whole page
-    	
-    });
+	    });
 	
 				
-			});   
+	}); //end of get emoji-test.txt oncomplete function. Back to "ready."
 		   
-		   
+   
 	  //let's load some instruments!
 	  loadInstrument();
 	 
@@ -354,8 +366,7 @@ if (fx){
 	
 	  
 	
-		if (document.addEventListener) //trigger if fullscreen happens
-	{
+		if (document.addEventListener){ //trigger if fullscreen happens
 	    document.addEventListener('webkitfullscreenchange', exitHandler, false);
 	    document.addEventListener('mozfullscreenchange', exitHandler, false);
 	    document.addEventListener('fullscreenchange', exitHandler, false);

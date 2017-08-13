@@ -26,9 +26,9 @@
     url('VeraMono.ttf') format('truetype');
 }
 	
-		
+
 	body {
-	    background-color: #00ff00;
+	    background-color: #00FF00;
 	    margin: 0px;
 	    position: fixed; 
       overflow: hidden;
@@ -46,7 +46,8 @@
 	  overflow: hidden;
 	}
 	
-	#mainmenu{		
+	#mainmenu{	
+			
 		background-color: #FFFFFF;
 		font-size:3vh; 
 		top: 75vh; 
@@ -62,7 +63,24 @@
 </head>
 <body>
 	
-
+	<div id ="gridzone" style="height: 100vh;"></div>
+	<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>
+		<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am">
+		<button id="playbutton">Go!</button><br>
+		<select id="emojitype">
+	 	  <option>All emojis (except symbols)</option>
+	 	  <option>Smileys & People</option>
+	  	<option>Animals & Nature</option>
+	  	<option>Travel & Places</option>
+	  	<option>Activities</option>
+	  	<option>Objects</option>
+	  	<option>Flags</option>
+	  	<option>Symbols</option>
+		</select>
+<span style="font-size:2vh;">
+	
+		<i>start typing!</i></span>
+	</div>
 
 </body>
 
