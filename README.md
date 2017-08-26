@@ -19,13 +19,16 @@ Z   X   C   V   B   N   M   ,   .   /
 I designed Emojidrone for playing improvised music where some or all of the performers are playing in the same key, ideally when an insane simulataneous visual component is desired as well. 
 
 ### Uses
-Even if you don't consider yourself a musician, you can learn to play Emojidrone in a matter of seconds. Emojidrone is fun to play in your living room with a friend on guitar or piano, or even by yourself on lunch break. Change the background color to black, hook it up to a projector, and use it on stage. Switch the background color to #00FF00, chromakey it out, and use it to generate live insane overlays for your TV show!
+Even if you don't consider yourself a musician, you can learn to play Emojidrone in a matter of seconds. Emojidrone is fun to play in your living room with a friend on guitar or piano, or even by yourself on lunch break. Change the background color to black, hook it up to a projector, and use it on stage. Switch the background color to lime (#00FF00), chromakey it out, and use it to generate live insane overlays for your TV show!
 
 
 ## Installation 
-Download, place everything on a web server, visit the URL. Why the web server? Well, in Chrome, it doesn't work right when loaded from the local file system, although Firefox seems to not care!
+Download, place everything on a web server, visit the URL. Why the web server? Well, in Chrome, it doesn't work right when loaded from the local file system, although Firefox and Safari seem to not care!
 
 
 ### Config
+Emoji subset and background color can be configured via the browser.
 
-Edit emojidrone.js to change pitch, turn on effects, change background color, etc. For background color, pink is the default. Change to #00ff00 to use a chromakey for visual overlay or black for projecting over performers.
+For background color, lime (#00FF00) is the default so that chromakey works right away for use as a visual overlay. Switch to black for projecting over performers, or another color if you're just playing for fun.
+
+Edit emojidrone.js to change pitch, turn on effects, switch stereo/mono, etc. 

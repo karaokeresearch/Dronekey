@@ -287,8 +287,11 @@ function exitHandler() //what happens when you enter or exit full screen
 {
 	if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
 		$("#mainmenu").css("visibility", "hidden");
+		setTimeout(function(){$("*").css("cursor", "none");},500);
+		
 	} else {
 		$("#mainmenu").css("visibility", "visible");
+		$("*").css("cursor", "default");
 	}
 }
 
