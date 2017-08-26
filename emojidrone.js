@@ -200,13 +200,17 @@ var loadInstrument = function(){
 		var k=0;
 		for (i=0;i<10;i++){ //bank
 		  var r = Math.floor(Math.random()*myAudioFiles.length); //random instrument
+		  var shiftUp=false; //should we use a higher octave?
 			for (j=0;j<4;j++){ //slot
 					 var offset = noteValue[myAudioFiles[r].note];
 					var rate;
 					if (i<-1){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
 						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-24)/12)))/2;
 					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;}
-			
+					console.log(rate);
+			  if (rate<0.60 || shiftUp){ //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
+			  	rate = rate*2;
+			  	shiftUp=true;}
 				if(sound[k]){sound[k].unload()};
 				
 				if (!myAudioFiles[r].volume){var myVolume=1}else {var myVolume=myAudioFiles[r].volume}	
