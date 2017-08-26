@@ -107,12 +107,6 @@ var launchIntoFullscreen = function(element) {
 	  
 
 
-
-
-
-
-
-
 var noteValue={
 	"A"  :0,
 	"A#" :1,
@@ -207,7 +201,7 @@ var loadInstrument = function(){
 					if (i<-1){ //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
 						 rate =     Math.pow(2,(1+(((chordNotes[j]-offset)-24)/12)))/2;
 					 }else{ rate = Math.pow(2,(1+(((chordNotes[j]-offset)-12)/12)))/2;}
-					console.log(rate);
+					//console.log(rate);
 			  if (rate<0.60 || shiftUp){ //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
 			  	rate = rate*2;
 			  	shiftUp=true;}
@@ -268,10 +262,7 @@ function exitHandler() //what happens when you enter or exit full screen
 
 	$( document ).ready(function() { //let's do this!
 		   console.log( "ready!" );
-		 
-
- 
-		   
+		 	   
 		   var maincat="";
 		   var subcat="";
 		   
@@ -329,6 +320,7 @@ function exitHandler() //what happens when you enter or exit full screen
      
      $("#playbutton").click(function(event) { 
      	launchIntoFullscreen(document.documentElement); // the whole page
+     	$('body').css('background-color', $("#bodycolor").val());
 	    chord=$("#chordname").val();
 	    loadInstrument();
 	    generateReducedListOfSVGs();
@@ -366,7 +358,7 @@ if (fx){
      if (keyMap[actualKey]>-1){
 			embiggen(keyMap[actualKey]);
 			sound[keyMap[actualKey]].play();
-      console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+      //console.log(sound[keyMap[actualKey]]._src); //log instrument name		
 		}
 	});
 	
