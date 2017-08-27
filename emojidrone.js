@@ -246,7 +246,7 @@ var loadInstrument = function() {
 			var howlParams;
 			if (stereo) {
 				howlParams = {
-					src: ['samples/' + myAudioFiles[r].filename],
+					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
 					stereo: -0.5 + (i * 0.1),
 					volume: 0.2 * myVolume,
 					rate: rate
@@ -262,7 +262,7 @@ var loadInstrument = function() {
 
 			} else {
 				howlParams = {
-					src: ['samples/' + myAudioFiles[i].filename],
+					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
 					volume: 0.2 * myVolume,
 					rate: rate
 				};
