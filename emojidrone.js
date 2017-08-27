@@ -329,10 +329,20 @@ var loadEmoji = function(emojiset){
 					var object = result[4];
 					sourcefile = sourcefile.replace(/\s+$/, "");
 					sourcefile = sourcefile.replace(/\s/g, "_");
-					sourcefile = sourcefile.toLowerCase();
-					if (emojiset == "twemoji"){sourcefile = sourcefile + ".svg";}
-					if (emojiset == "noto"){sourcefile = "emoji_u" + sourcefile + ".svg";}
-					if (emojiset == "noto-classic"){sourcefile = "emoji_u" + sourcefile + ".svg";}
+					
+					if (emojiset == "twemoji"){
+						sourcefile = sourcefile.toLowerCase();
+						sourcefile = sourcefile + ".svg";}
+					if (emojiset == "noto"){
+						sourcefile = sourcefile.toLowerCase();
+						sourcefile = "emoji_u" + sourcefile + ".svg";}
+					if (emojiset == "noto-classic"){
+						sourcefile = sourcefile.toLowerCase();
+						sourcefile = "emoji_u" + sourcefile + ".svg";}
+					if (emojiset == "fxemoji"){
+						sourcefile = sourcefile.toUpperCase(); 
+						sourcefile = "u" + sourcefile + ".svg";
+						}
 					
 	
 					//object = object.replace(/[^a-z]/ig, "-");
