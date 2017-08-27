@@ -31,10 +31,10 @@ Download, place everything on a web server, visit the URL. Why the web server? W
 ### Options
 Emoji category, background color, and emojiset can be configured via the browser. 
 
-Categories are pretty self-explanatory. We use the unicode consortium categories for now.
+* Categories are pretty self-explanatory. We use the Unicode Consortium categories for now.
 
-For background color, lime (#00FF00) is the default so that chromakey works right away for use as a visual overlay. Switch to black for projecting over performers, or another color if you're just playing for fun.
+* For background color, lime (#00FF00) is the default so that chromakey works right away for use as a visual overlay. Switch to black for projecting over performers, or another color if you're just playing for fun.
 
-For emojiset, twemoji is the default since it's the most lightweight. Noto is the most resource-intensive.
+* For emojiset, twemoji is the default since it's the most lightweight. Noto is the most resource-intensive.
 
 Edit emojidrone.js to change pitch, turn on effects, switch stereo/mono, etc. 
