@@ -162,12 +162,14 @@ var loadTheGrid = function() {
 			//var hexval = (i + 208).toString(16);
 
 			if (reducedListOfSVGs.length < 1) {
-				generateReducedListOfSVGs();
-			} //in case we ran out of emojis. Flags, for instance.
-
+				generateReducedListOfSVGs(function(){//in case we ran out of emojis. Flags, for instance.
+				//the below code should maybe be in a callback, but this is an edge case and it always seems to work, so...
+				});
+			} 
 			var splicedFilename = reducedListOfSVGs.splice(reducedListOfSVGs.indexOf(reducedListOfSVGs[Math.floor(Math.random() * reducedListOfSVGs.length)]), 1); //remove and retrieve a random value from an array
-			theGrid = theGrid + '<img class="arbitrary" id="k' + i + '" src="emoji/noto/' + splicedFilename + '" style="left: ' + left.toFixed(2) + "vw" + "; top: " + top.toFixed(2) + 'vh">' + "\n";
+			theGrid = theGrid + '<img class="arbitrary" id="k' + i + '" src="' + splicedFilename + '" style="left: ' + left.toFixed(2) + "vw" + "; top: " + top.toFixed(2) + 'vh">' + "\n";
 			i++;
+
 		}
 	}
 
@@ -176,7 +178,7 @@ var loadTheGrid = function() {
 	$("#gridzone").html(theGrid); //render the emoji html	
 };
 
-var generateReducedListOfSVGs = function() {
+var generateReducedListOfSVGs = function(callback) { //looks at category, which is already populated with SVG names, remember and collects a raw list of good emojis to use
 	reducedListOfSVGs = [];
 
 	console.log("---");
@@ -207,7 +209,7 @@ var generateReducedListOfSVGs = function() {
 		}
 	}
 
-
+callback();
 };
 
 var loadInstrument = function() {
@@ -295,85 +297,88 @@ function exitHandler() //what happens when you enter or exit full screen
 }
 
 
+var loadEmoji = function(emojiset){
+	category = {};
+	var maincat;
+	var subcat;
+	
+	$.getJSON('emoji/' + emojiset + '/emoji.JSON', function(listOfSVGs) { //read and parse the emoji-test.txt file to catagorize emojis	
+		$.get('emoji/emoji-test.txt', function(data) { //read and parse the emoji-test.txt file to catagorize emojis
+			var arrayOfLines = data.match(/[^\r\n]+/g);
+			var result;
+	
+			for (var i = 0; i < arrayOfLines.length; i++) {
+				var line = arrayOfLines[i];
+	
+				if (result = line.match(/^\#/)) { //cat or subcat
+					if (result = line.match(/(\w*)group\: (.*)/)) {
+						var sub = result[1];
+						var cat = result[2];
+						if (sub != "sub") { //it's a main category:
+							category[cat] = {};
+							maincat = cat;
+						} else { //subcat
+							category[maincat][cat] = {};
+							subcat = cat;
+						}
+					}
+				}
+	
+				if (result = line.match(/^(.*);(.*)#(.*?)[^a-z]*(.*)/i)) { //regular line
+					var sourcefile = result[1];
+					var object = result[4];
+					sourcefile = sourcefile.replace(/\s+$/, "");
+					sourcefile = sourcefile.replace(/\s/g, "_");
+					sourcefile = sourcefile.toLowerCase();
+					if (emojiset == "twemoji"){sourcefile = sourcefile + ".svg";}
+					if (emojiset == "noto"){sourcefile = "emoji_u" + sourcefile + ".svg";}
+					if (emojiset == "noto-classic"){sourcefile = "emoji_u" + sourcefile + ".svg";}
+					
+	
+					//object = object.replace(/[^a-z]/ig, "-");
+					object = object.replace(/^man /i, "person "); //lump by action, not gender
+					object = object.replace(/^woman /i, "person ");
+					object = object.replace(/^men /i, "people "); //lump by action, not gender
+					object = object.replace(/^women /i, "people ");
+					object = object.replace(/\:.*/, ""); //all skin types together
+					//console.log( maincat +"/" + subcat + "/"+ object +":" +sourcefile );
+					if (maincat && subcat) {
+						if (!category[maincat][subcat][object]) {
+							category[maincat][subcat][object] = [];
+						}
+						
+						if (listOfSVGs.indexOf(sourcefile) > 0) { //it's in our pre-built list of available SVG resources
+							//console.log(maincat + " : " +subcat + " : " +object + " : " +sourcefile.toLowerCase())
+							if (object != "watch") { //firefox hates watch emojis. And who wouldn't.
+								category[maincat][subcat][object].push("emoji/" + emojiset + "/" + sourcefile);
+							}
+						}
+						
+						
+					}
+				}
+	
+			}
+	
+	
+			generateReducedListOfSVGs(function(){loadTheGrid();});
+			
+	
+		}); //end of get emoji-test.txt oncomplete function. Back to "ready."
+	}); //end of loading the listOfSVGs array
+
+}
+
+
+
 
 
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
 
-	var maincat = "";
-	var subcat = "";
-
-	$.get('emoji/emoji-test.txt', function(data) { //read and parse the emoji-test.txt file to catagorize emojis
-		var arrayOfLines = data.match(/[^\r\n]+/g);
-		var result;
-
-		for (var i = 0; i < arrayOfLines.length; i++) {
-			var line = arrayOfLines[i];
-
-			if (result = line.match(/^\#/)) { //cat or subcat
-				if (result = line.match(/(\w*)group\: (.*)/)) {
-					var sub = result[1];
-					var cat = result[2];
-					if (sub != "sub") { //it's a main category:
-						category[cat] = {};
-						maincat = cat;
-					} else { //subcat
-						category[maincat][cat] = {};
-						subcat = cat;
-					}
-				}
-			}
-
-			if (result = line.match(/^(.*);(.*)#(.*?)[^a-z]*(.*)/i)) { //regular line
-				var sourcefile = result[1];
-				var object = result[4];
-				sourcefile = sourcefile.replace(/\s+$/, "");
-				sourcefile = sourcefile.replace(/\s/g, "_");
-				sourcefile = "emoji_u" + sourcefile + ".svg";
-				//object = object.replace(/[^a-z]/ig, "-");
-				object = object.replace(/^man /i, "person "); //lump by action, not gender
-				object = object.replace(/^woman /i, "person ");
-				object = object.replace(/^men /i, "people "); //lump by action, not gender
-				object = object.replace(/^women /i, "people ");
-				object = object.replace(/\:.*/, ""); //all skin types together
-				//console.log( maincat +"/" + subcat + "/"+ object +":" +sourcefile );
-				if (maincat && subcat) {
-					if (!category[maincat][subcat][object]) {
-						category[maincat][subcat][object] = [];
-					}
-					if (listOfSVGs.indexOf(sourcefile.toLowerCase()) > 0) { //it's in our pre-built list of available SVG resources
-						//console.log(maincat + " : " +subcat + " : " +object + " : " +sourcefile.toLowerCase())
-						if (object != "watch") { //firefox hates watch emojis. And who wouldn't.
-							category[maincat][subcat][object].push(sourcefile.toLowerCase());
-						}
-					}
-				}
-			}
-
-		}
-
-
-		generateReducedListOfSVGs();
-		loadTheGrid();
-
-
-
-		$("#playbutton").click(function(event) {
-			launchIntoFullscreen(document.documentElement); // the whole page
-			$('body').css('background-color', $("#bodycolor").val());
-			chord = $("#chordname").val();
-			loadInstrument();
-			generateReducedListOfSVGs();
-			loadTheGrid();
-
-		});
-
-
-	}); //end of get emoji-test.txt oncomplete function. Back to "ready."
-
-
 	//let's load some instruments!
 	loadInstrument();
+	loadEmoji($("#emojiset").val());
 
 	if (fx) {
 		tuna = new Tuna(Howler.ctx); //prepare reverb
@@ -389,6 +394,16 @@ $(document).ready(function() { //let's do this!
 	}
 
 
+
+		$("#playbutton").click(function(event) {
+			launchIntoFullscreen(document.documentElement); // the whole page
+			$('body').css('background-color', $("#bodycolor").val());
+			chord = $("#chordname").val();
+			loadInstrument();
+			loadEmoji($("#emojiset").val());
+			
+
+		});
 
 
 	$(document).on('keydown', function(event) { //key is pressed
