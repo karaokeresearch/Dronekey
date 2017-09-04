@@ -291,6 +291,7 @@ function exitHandler() //what happens when you enter or exit full screen
 		$("#mainmenu").css("visibility", "hidden");
 		setTimeout(function(){$("*").css("cursor", "none");},500);		
 	} else {
+		$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
 		$("*").css("cursor", "default");
 	}
@@ -380,7 +381,26 @@ var loadEmoji = function(emojiset){
 }
 
 
+var titleMaker = function() { //Makes an emoji title from the official names. Apologies for the variable names. Was done in a hurry.
 
+		var a =Math.floor(Math.random() * Object.keys(category).length);
+		var cat = Object.keys(category)[a];
+		var subcat = category[cat];
+		
+		var b = Math.floor(Math.random() * Object.keys(subcat).length);
+		var objs = Object.keys(subcat)[b];
+		var subsubcat = category[cat][objs];
+		
+		var c = Math.floor(Math.random() * Object.keys(subsubcat).length);
+		var emojiname = Object.keys(subsubcat)[c];
+		var thefile = category[cat][objs][emojiname];
+	
+	return(emojiname);
+};
+
+var toTitleCase = function(str){
+    return str.replace(/[^\W_]+[^\s-]+/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
 
 
 $(document).ready(function() { //let's do this!
@@ -411,9 +431,13 @@ $(document).ready(function() { //let's do this!
 			chord = $("#chordname").val();
 			loadInstrument();
 			loadEmoji($("#emojiset").val());
-			
-
 		});
+
+		$("#gentitle").click(function(event) {
+			$("#thetitle").html(toTitleCase(titleMaker()));
+		});
+		
+		
 
 
 	$(document).on('keydown', function(event) { //key is pressed

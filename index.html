@@ -46,12 +46,12 @@
 	}
 	
 	#mainmenu{	
-			
 		background-color: #FFFFFF;
 		font-size:3vh; 
 		top: 75vh; 
 		left:50vw; 
 		width:auto;
+		white-space: nowrap;
 		padding: 1vw;
 		border: 0.3vw solid black;
 	}
@@ -63,12 +63,28 @@
 <body>
 	
 	<div id ="gridzone" style="height: 100vh;"></div>
-	<div class="arbitrary" id="mainmenu"><span style="font-size:10vh;">Emojidrone</span><br>
+	<div class="arbitrary" id="mainmenu"><span id="thetitle" style="font-size:8vh;">Emojidrone</span><br>
 		<span style="font-size:2vh;"><i>start typing!</i></span>
 		<br>
 		<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am">
 		<button id="playbutton">Go!</button>
 <br>
+	<select id="bodycolor">
+	 	  <option>Lime</option>
+	 	  <option>Black</option>
+	 	  <option>Pink</option>
+	 	  <option>Bisque</option>
+	 	  <option>LightGrey</option>
+	 	  <option>White</option>
+		</select>
+		
+				<select id="emojiset">
+	 	  <option>twemoji</option>
+	 	  <option>noto</option>
+	 	  <option>noto-classic</option>
+	 	  <option>fxemoji</option>
+		</select>
+
 		<select id="emojitype">
 	 	  <option>All emojis (except symbols)</option>
 	 	  <option>Activities</option>
@@ -79,24 +95,11 @@
 	 	  <option>Symbols</option>
 	  	<option>Travel & Places</option>
 		</select>
-
-	<select id="bodycolor">
-	 	  <option>Lime</option>
-	 	  <option>Black</option>
-	 	  <option>Pink</option>
-	 	  <option>Bisque</option>
-	 	  <option>LightGrey</option>
-	 	  <option>White</option>
-		</select>
 		
-		<select id="emojiset">
-	 	  <option>twemoji</option>
-	 	  <option>noto</option>
-	 	  <option>noto-classic</option>
-	 	  <option>fxemoji</option>
-		</select>
-		<BR>
-		<span style="font-size:1vh;"><a target= "_blank" href="https://github.com/karaokeresearch/Emojidrone"><i>source and instructions</i></a></span>
+
+<br>		
+		<span style="font-size:1.25vh;"><a target= "_blank" href="https://github.com/karaokeresearch/Emojidrone"><i>source and instructions</i></a> - <a href="#" id="gentitle">generate title</a></span>
+
 	</div>
 
 </body>
