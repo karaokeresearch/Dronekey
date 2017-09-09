@@ -29,7 +29,7 @@ var reducedListOfSVGs = [];
 var leftTop = [];
 var iconSize = [];
 var sound = [];
-var chord = "Am";
+var chord = "Am7";
 var scale = teoria.scale(teoria.note("A4"), "major"); //teoria scale object
 var chords = {}; //key:scale degree, value: teoria chord object
 var tuna;
@@ -89,18 +89,22 @@ var embiggen = function(kNum) { //key has been pressed, make it big.
 
 
 var findChordsInScale = function(scale) {
-	// takes teoria scale object and returns associative array of teoria chord objects diatonic to the scale
+	/* takes teoria scale object and returns array of 
+		teoria chord objects diatonic to the scale, along with some other
+		useful chords (V7V, eg)
+	*/
 
 	var roots = scale.notes(); //notes of the scale serve as roots of the chords
-	return {
-		I:teoria.chord(roots[0], "maj7")
-		,ii:teoria.chord(roots[1], "m7")
-		,iii:teoria.chord(roots[2], "m7")
-		,VI:teoria.chord(roots[3], "maj7")
-		,V:teoria.chord(roots[4], "7")
-		,vi:teoria.chord(roots[5], "m7")
-		,vii:teoria.chord(roots[6], "m7b5")
-	};
+	return [
+		teoria.chord(roots[0], "maj7")
+		,teoria.chord(roots[1], "m7")
+		,teoria.chord(roots[2], "m7")
+		,teoria.chord(roots[3], "maj7")
+		,teoria.chord(roots[4], "7")
+		,teoria.chord(roots[5], "m7")
+		,teoria.chord(roots[6], "m7b5")
+		,teoria.chord(roots[4].interval("P5"), "7")
+	];
 }
 
 var findChordNotes = function(whichChord) { //Returns an array of all the note values in the chord for two octives. A is zero
@@ -232,20 +236,20 @@ var loadInstrument = function() {
 
 	chords = findChordsInScale(scale);
 
-	var chordNotes = findChordNotes(chord);
+	
+	var c = teoria.chord(chord);
 	var k = 0;
 	for (var i = 0; i < 10; i++) { //bank
 		var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
 		var shiftUp = false; //should we use a higher octave?
-		for (var j = 0; j < 4; j++) { //slot
-			var offset = noteValue[myAudioFiles[r].note];
-			var rate;
-			if (i < -1) { //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
-				rate = Math.pow(2, (1 + (((chordNotes[j] - offset) - 24) / 12))) / 2;
-			} else {
-				rate = Math.pow(2, (1 + (((chordNotes[j] - offset) - 12) / 12))) / 2;
-			}
-			//console.log(rate);
+		for (var j = 0; j < c.notes().length; j++) { //slot
+
+			var baseNote = teoria.note(audioFiles[r].note); //the note the sample is in
+			var goalNote = c.notes()[j]; //the note we want to play th sample at			
+			var rate; //multiply baseNote by this to get pitch to goalNote
+			
+			rate = (goalNote.fq() / (baseNote.fq() * 8));
+			
 			if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
 				rate = rate * 2;
 				shiftUp = true;
@@ -438,8 +442,17 @@ $(document).ready(function() { //let's do this!
 			cutoff: 2000, //cutoff frequency of the built in lowpass-filter. 20 to 22050
 			bypass: 0
 		});
-		Howler.addEffect(delay); //delay effects
+		Howler.addEffect(delay); //delay effects		
 	}
+	var testChord = teoria.chord("Am7");
+
+	testChord.notes().forEach(function(note){console.log(note.fq());});
+
+	var notes = findChordNotes("Am7");
+	notes.forEach(function(note) {
+		console.log(note);
+	});
+	
 
 
 
