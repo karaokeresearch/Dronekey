@@ -30,6 +30,8 @@ var leftTop = [];
 var iconSize = [];
 var sound = [];
 var chord = "Am";
+var scale = teoria.scale(teoria.note("A4"), "major"); //teoria scale object
+var chords = {}; //key:scale degree, value: teoria chord object
 var tuna;
 var category = {};
 
@@ -86,7 +88,20 @@ var embiggen = function(kNum) { //key has been pressed, make it big.
 };
 
 
+var findChordsInScale = function(scale) {
+	// takes teoria scale object and returns associative array of teoria chord objects diatonic to the scale
 
+	var roots = scale.notes(); //notes of the scale serve as roots of the chords
+	return {
+		I:teoria.chord(roots[0], "maj7")
+		,ii:teoria.chord(roots[1], "m7")
+		,iii:teoria.chord(roots[2], "m7")
+		,VI:teoria.chord(roots[3], "maj7")
+		,V:teoria.chord(roots[4], "7")
+		,vi:teoria.chord(roots[5], "m7")
+		,vii:teoria.chord(roots[6], "m7b5")
+	};
+}
 
 var findChordNotes = function(whichChord) { //Returns an array of all the note values in the chord for two octives. A is zero
 	var chordNotes = [];
@@ -214,6 +229,9 @@ callback();
 
 var loadInstrument = function() {
 	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
+
+	chords = findChordsInScale(scale);
+
 	var chordNotes = findChordNotes(chord);
 	var k = 0;
 	for (var i = 0; i < 10; i++) { //bank
