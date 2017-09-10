@@ -29,11 +29,13 @@ var reducedListOfSVGs = [];
 var leftTop = [];
 var iconSize = [];
 var sound = [];
-var chord = "Am7";
+//var chord = "Am7";
 var scale = teoria.scale(teoria.note("A4"), "major"); //teoria scale object
-var chords = {}; //key:scale degree, value: teoria chord object
+var chords = []; 
 var tuna;
 var category = {};
+var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
+var advanced = true;
 
 
 
@@ -107,30 +109,6 @@ var findChordsInScale = function(scale) {
 	];
 }
 
-var findChordNotes = function(whichChord) { //Returns an array of all the note values in the chord for two octives. A is zero
-	var chordNotes = [];
-	var keepgoing = true;
-	var tchord;
-	try {
-		tchord = teoria.chord(whichChord);
-	} catch (err) {
-		keepgoing = false;
-	}
-
-	if (keepgoing) {
-
-		for (var i = 0; i < tchord.notes().length; i++) {
-			chordNotes.push((tchord.notes()[i].key() - 37));
-		}
-		for (var i = 0; i < tchord.notes().length; i++) {
-			chordNotes.push(((tchord.notes()[i].key() - 25)));
-		}
-		//chordNotes.sort(function(a, b){return a-b});
-	}
-	return chordNotes;
-};
-
-
 var launchIntoFullscreen = function(element) {
 	if (element.requestFullscreen) {
 		element.requestFullscreen();
@@ -142,30 +120,6 @@ var launchIntoFullscreen = function(element) {
 		element.msRequestFullscreen();
 	}
 };
-
-
-
-
-var noteValue = {
-	"A": 0,
-	"A#": 1,
-	"Bb": 1,
-	"B": 2,
-	"C": 3,
-	"C#": 4,
-	"Db": 4,
-	"D": 5,
-	"D#": 6,
-	"Eb": 6,
-	"E": 7,
-	"F": 8,
-	"F#": 9,
-	"Gb": 9,
-	"G": 10,
-	"G#": 11,
-	"Ab": 11
-};
-
 
 var loadTheGrid = function() {
 	var theGrid = "";
@@ -232,75 +186,81 @@ callback();
 };
 
 var loadInstrument = function() {
-	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
+	//var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
+
 
 	chords = findChordsInScale(scale);
 
-	
-	var c = teoria.chord(chord);
-	var k = 0;
-	for (var i = 0; i < 10; i++) { //bank
-		var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
-		var shiftUp = false; //should we use a higher octave?
-		for (var j = 0; j < c.notes().length; j++) { //slot
+	for (m = 0; m < chords.length; m++) {
+		var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
 
-			var baseNote = teoria.note(audioFiles[r].note); //the note the sample is in
-			var goalNote = c.notes()[j]; //the note we want to play th sample at			
-			var rate; //multiply baseNote by this to get pitch to goalNote
-			
-			rate = (goalNote.fq() / (baseNote.fq() * 8));
-			
-			if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
-				rate = rate * 2;
-				shiftUp = true;
+		sound[m] = [];
+		var c = chords[m];
+		console.log(c.name);
+		var k = 0;
+		for (var i = 0; i < 10; i++) { //bank
+			var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
+			var shiftUp = false; //should we use a higher octave?
+			for (var j = 0; j < c.notes().length; j++) { //slot
+
+				var baseNote = teoria.note(audioFiles[r].note); //the note the sample is in
+				var goalNote = c.notes()[j]; //the note we want to play th sample at			
+				var rate; //multiply baseNote by this to get pitch to goalNote
+				
+				rate = goalNote.fq() / (baseNote.fq() * 8);
+				
+				if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
+					rate = rate * 2;
+					shiftUp = true;
+				}
+				if (sound[m][k]) {
+					sound[m][k].unload();
+				}
+
+				var myVolume;
+				if (!myAudioFiles[r].volume) {
+					myVolume = 1;
+				} else {
+					myVolume = myAudioFiles[r].volume;
+				}
+
+				var howlParams;
+				if (stereo) {
+					howlParams = {
+						src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
+						stereo: -0.5 + (i * 0.1),
+						volume: 0.2 * myVolume,
+						rate: rate
+					};
+					(function(hp, em, kay) { //stupid closures because javascript was designed by genius morons. 
+
+						$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
+							hp.onload = next;
+							sound[em][kay] = new Howl(hp);
+						});
+					})(howlParams, m, k);
+
+
+				} else {
+					howlParams = {
+						src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
+						volume: 0.2 * myVolume,
+						rate: rate
+					};
+					(function(hp, em, kay) {
+
+						$(document.body).queue("audioLoad", function(next) {
+							hp.onload = next;
+							sound[em][kay] = new Howl(hp);
+						});
+					})(howlParams, m, k);
+
+
+				}
+				k++;
 			}
-			if (sound[k]) {
-				sound[k].unload();
-			}
-
-			var myVolume;
-			if (!myAudioFiles[r].volume) {
-				myVolume = 1;
-			} else {
-				myVolume = myAudioFiles[r].volume;
-			}
-
-			var howlParams;
-			if (stereo) {
-				howlParams = {
-					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
-					stereo: -0.5 + (i * 0.1),
-					volume: 0.2 * myVolume,
-					rate: rate
-				};
-				(function(hp, kay) { //stupid closures because javascript was designed by genius morons. 
-
-					$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
-						hp.onload = next;
-						sound[kay] = new Howl(hp);
-					});
-				})(howlParams, k);
-
-
-			} else {
-				howlParams = {
-					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
-					volume: 0.2 * myVolume,
-					rate: rate
-				};
-				(function(hp, kay) {
-
-					$(document.body).queue("audioLoad", function(next) {
-						hp.onload = next;
-						sound[kay] = new Howl(hp);
-					});
-				})(howlParams, k);
-
-
-			}
-			k++;
+			myAudioFiles.splice(r, 1);
 		}
-		myAudioFiles.splice(r, 1);
 	}
 	$(document.body).dequeue("audioLoad");
 };
@@ -444,17 +404,6 @@ $(document).ready(function() { //let's do this!
 		});
 		Howler.addEffect(delay); //delay effects		
 	}
-	var testChord = teoria.chord("Am7");
-
-	testChord.notes().forEach(function(note){console.log(note.fq());});
-
-	var notes = findChordNotes("Am7");
-	notes.forEach(function(note) {
-		console.log(note);
-	});
-	
-
-
 
 		$("#playbutton").click(function(event) {
 			launchIntoFullscreen(document.documentElement); // the whole page
@@ -477,10 +426,13 @@ $(document).ready(function() { //let's do this!
 		}
 		var actualKey = (event.which);
 
-		if (keyMap[actualKey] > -1) {
+		if (actualKey in keyMap && keyMap[actualKey] > -1) {
 			embiggen(keyMap[actualKey]);
-			sound[keyMap[actualKey]].play();
+			sound[currentChord][keyMap[actualKey]].play();
 			//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+		}
+		else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+			currentChord = chordMap[actualKey];
 		}
 	});
 
