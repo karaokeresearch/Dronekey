@@ -40,8 +40,6 @@ var playing = false;
 var functionToggle = false;
 var functionToggleKey = 192 //grave accent/tilde
 
-
-
 var embiggen = function(kNum) { //key has been pressed, make it big.
 	var leftRandom;
 	var topRandom;
@@ -283,10 +281,17 @@ function exitHandler() //what happens when you enter or exit full screen
 {
 	if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
 		$("#mainmenu").css("visibility", "hidden");
+		$("#advanced-instructions").css("visibility", "hidden");
 		setTimeout(function(){$("*").css("cursor", "none");},500);		
 	} else {
 		$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
+		if (advanced) {
+			$("#advanced-instructions").css("visibility", "visible");
+		}
+		else {
+			$("#advanced-instructions").css("visibility", "hidden");
+		}
 		$("*").css("cursor", "default");
 		playing = false;
 	}
@@ -400,6 +405,16 @@ var toTitleCase = function(str){
 
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
+	var instructionsArray = ["Select a scale from the drop-down menu and click Go!"
+		,"Use the numpad keys 1-7 to switch between the scale's diatonic 7th chords as you play."
+		,"Hold the ~ key to activate extra functionality:"
+		,"* Use the number row to switch between chords if you don't have a numpad."
+		,"* More to come..."];
+	var instructionsHTML = "";
+	instructionsArray.forEach(function(element) {
+		instructionsHTML += "<div>" + element + "</div>"
+	});
+	$("#instructions-text").html(instructionsHTML);
 
 	//let's load some instruments!
 	//loadInstrument();
@@ -438,6 +453,7 @@ $(document).ready(function() { //let's do this!
 				advanced = true;
 				
 				$("#advanced").text("advanced mode on");
+				$("#advanced-instructions").css("visibility", "visible");
 				$("#chordorscale").text("Scale:");
 				$("#input").html("<select id='scale'> \
 					<option value='C'>C Major / A Minor</option> \
@@ -453,14 +469,11 @@ $(document).ready(function() { //let's do this!
 					<option value='A#'>A#/Gb Major / G Minor</option> \
 					<option value='B'>B Major / G#/Ab Minor</option> \
 					</select>");				
-				alert("Emojidrone - advanced mode\n" +
-					"Select a scale.\n" +
-					"Use Numpad 1-7 while playing to select 7th chords diatonic to the selected scale. \n");
-				//loadInstrument();
 			}
 			else {
 				advanced = false;
 				$("#advanced").text("advanced mode off");
+				$("#advanced-instructions").css("visibility", "hidden");
 				$("#chordorscale").text("Chord:");
 				$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
 			}
