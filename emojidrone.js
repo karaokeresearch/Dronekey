@@ -29,13 +29,14 @@ var reducedListOfSVGs = [];
 var leftTop = [];
 var iconSize = [];
 var sound = [];
-//var chord = "Am7";
-var scale = teoria.scale(teoria.note("A4"), "major"); //teoria scale object
+var chord = "Am7";
+var scale; //teoria scale object
 var chords = []; 
 var tuna;
 var category = {};
 var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
-var advanced = true;
+var advanced = false;
+var playing = false;
 
 
 
@@ -98,14 +99,14 @@ var findChordsInScale = function(scale) {
 
 	var roots = scale.notes(); //notes of the scale serve as roots of the chords
 	return [
-		teoria.chord(roots[0], "maj7")
-		,teoria.chord(roots[1], "m7")
-		,teoria.chord(roots[2], "m7")
-		,teoria.chord(roots[3], "maj7")
-		,teoria.chord(roots[4], "7")
-		,teoria.chord(roots[5], "m7")
-		,teoria.chord(roots[6], "m7b5")
-		,teoria.chord(roots[4].interval("P5"), "7")
+		teoria.chord(roots[0], "maj7") //Imaj7
+		,teoria.chord(roots[1], "m7") //iim7
+		,teoria.chord(roots[2], "m7") //iiim7
+		,teoria.chord(roots[3], "maj7") //IVmaj7
+		,teoria.chord(roots[4], "7") //V7
+		,teoria.chord(roots[5], "m7") //vimin7
+		,teoria.chord(roots[6], "m7b5") //vii half-diminished
+		,teoria.chord(roots[4].interval("P5"), "7") //V7V
 	];
 }
 
@@ -186,28 +187,37 @@ callback();
 };
 
 var loadInstrument = function() {
-	//var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
+	
+	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
+	
+	var finalAudioFiles = []; //store the randomly selected audio files ahead of time
 
-
-	chords = findChordsInScale(scale);
-
-	for (m = 0; m < chords.length; m++) {
-		var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
-
+	for (i = 0; i < 10; i++) {
+		finalAudioFiles.push(myAudioFiles.splice(Math.floor(Math.random() * myAudioFiles.length), 1)[0])
+	}
+	
+	//normal mode we only need the one chord selected by the user. 
+	//in advanced mode we need all the diatonic chords
+	chords = (advanced ? findChordsInScale(scale) : [teoria.chord(chord, 3)]);
+	//index 'm' represents which chord is being built
+	for (m = 0; m < (advanced ? chords.length : 1); m++) { //only loop through once if not in advanced mode
 		sound[m] = [];
 		var c = chords[m];
-		console.log(c.name);
+		
 		var k = 0;
 		for (var i = 0; i < 10; i++) { //bank
-			var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
+			//var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
 			var shiftUp = false; //should we use a higher octave?
-			for (var j = 0; j < c.notes().length; j++) { //slot
+			for (var j = 0; j < 4; j++) { //slot
+				//if we are working with a triad, add the root one octave up to the end of the chord
+				var triad = (j >= c.notes().length);
 
-				var baseNote = teoria.note(audioFiles[r].note); //the note the sample is in
-				var goalNote = c.notes()[j]; //the note we want to play th sample at			
+				var baseNote = teoria.note(finalAudioFiles[i].note); //the note the sample is in
+				var goalNote = c.notes()[triad ? 0 : j]; //the note we want to play th sample at			
 				var rate; //multiply baseNote by this to get pitch to goalNote
 				
-				rate = goalNote.fq() / (baseNote.fq() * 8);
+				rate = (goalNote.fq() / (baseNote.fq() * 4)) * (triad ? 2 : 1);
+
 				
 				if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
 					rate = rate * 2;
@@ -218,16 +228,16 @@ var loadInstrument = function() {
 				}
 
 				var myVolume;
-				if (!myAudioFiles[r].volume) {
+				if (!finalAudioFiles[i].volume) {
 					myVolume = 1;
 				} else {
-					myVolume = myAudioFiles[r].volume;
+					myVolume = finalAudioFiles[i].volume;
 				}
 
 				var howlParams;
 				if (stereo) {
 					howlParams = {
-						src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
+						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
 						stereo: -0.5 + (i * 0.1),
 						volume: 0.2 * myVolume,
 						rate: rate
@@ -243,7 +253,7 @@ var loadInstrument = function() {
 
 				} else {
 					howlParams = {
-						src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
+						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
 						volume: 0.2 * myVolume,
 						rate: rate
 					};
@@ -259,7 +269,7 @@ var loadInstrument = function() {
 				}
 				k++;
 			}
-			myAudioFiles.splice(r, 1);
+			//myAudioFiles.splice(r, 1);
 		}
 	}
 	$(document.body).dequeue("audioLoad");
@@ -276,6 +286,7 @@ function exitHandler() //what happens when you enter or exit full screen
 		$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
 		$("*").css("cursor", "default");
+		playing = false;
 	}
 }
 
@@ -389,7 +400,7 @@ $(document).ready(function() { //let's do this!
 	console.log("ready!");
 
 	//let's load some instruments!
-	loadInstrument();
+	//loadInstrument();
 	loadEmoji($("#emojiset").val());
 
 	if (fx) {
@@ -408,19 +419,55 @@ $(document).ready(function() { //let's do this!
 		$("#playbutton").click(function(event) {
 			launchIntoFullscreen(document.documentElement); // the whole page
 			$('body').css('background-color', $("#bodycolor").val());
-			chord = $("#chordname").val();
+			if (!advanced) { chord = $("#chordname").val(); }
+			else { scale = teoria.scale($("#scale").val(), "major")}
 			loadInstrument();
 			loadEmoji($("#emojiset").val());
+			playing = true;
+			currentChord = 0;
 		});
 
 		$("#gentitle").click(function(event) {
 			$("#thetitle").html(toTitleCase(titleMaker()));
 		});
-		
+
+		$("#advanced").click(function(event) {
+			if (!advanced) {
+				advanced = true;
+				
+				$("#advanced").text("advanced mode on");
+				$("#chordorscale").text("Scale:");
+				$("#input").html("<select id='scale'> \
+					<option value='C'>C Major / A Minor</option> \
+					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
+					<option value='D'>D Major / B Minor</option> \
+					<option value='D#'>D#/Eb Major / C Minor</option> \
+					<option value='E'>E Major / C#/Db Minor</option> \
+					<option value='F'>F Major / D Minor</option> \
+					<option value='F#'>F#/Gb Major / D#/Eb Minor</option> \
+					<option value='G'>G Major / E Minor</option> \
+					<option value='G#'>G#/Ab Major / F Minor</option> \
+					<option value='A'>A Major / F#/Gb Minor</option> \
+					<option value='A#'>A#/Gb Major / G Minor</option> \
+					<option value='B'>B Major / G#/Ab Minor</option> \
+					</select>");				
+				alert("Emojidrone - advanced mode\n" +
+					"Select a scale.\n" +
+					"Use Numpad 1-7 while playing to select 7th chords diatonic to the selected scale. \n");
+				//loadInstrument();
+			}
+			else {
+				advanced = false;
+				$("#advanced").text("advanced mode off");
+				$("#chordorscale").text("Chord:");
+				$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
+			}
+		});
 		
 
 
 	$(document).on('keydown', function(event) { //key is pressed
+		if (!playing) { return; } //no noise in the menu!
 		if (document.activeElement.tagName == "BODY") {
 			event.preventDefault();
 		}
