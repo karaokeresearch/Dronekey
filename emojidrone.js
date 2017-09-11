@@ -37,6 +37,8 @@ var category = {};
 var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
 var advanced = false;
 var playing = false;
+var functionToggle = false;
+var functionToggleKey = 192 //grave accent/tilde
 
 
 
@@ -465,21 +467,40 @@ $(document).ready(function() { //let's do this!
 		});
 		
 
-
+	$(document).on('keyup', function(event) {
+		var actualKey = (event.which);
+		if (actualKey == functionToggleKey) { //toggle function key off
+			functionToggle = false;
+		}
+	});
 	$(document).on('keydown', function(event) { //key is pressed
-		if (!playing) { return; } //no noise in the menu!
+		
 		if (document.activeElement.tagName == "BODY") {
 			event.preventDefault();
 		}
 		var actualKey = (event.which);
 
-		if (actualKey in keyMap && keyMap[actualKey] > -1) {
-			embiggen(keyMap[actualKey]);
-			sound[currentChord][keyMap[actualKey]].play();
-			//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+		if (actualKey == functionToggleKey) { //toggle function key on
+			functionToggle = true;
 		}
-		else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
-			currentChord = chordMap[actualKey];
+
+		if (playing && !functionToggle) {
+
+			if (actualKey in keyMap && keyMap[actualKey] > -1) {
+				embiggen(keyMap[actualKey]);
+				sound[currentChord][keyMap[actualKey]].play();
+				//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+			}
+			else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+				currentChord = chordMap[actualKey];
+			}
+		}
+		else if (playing) { //functionToggle commands
+			//switch chords in advanced mode with non-numpad numeric keys
+			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+				currentChord = chordMap[actualKey];
+			}
+
 		}
 	});
 
