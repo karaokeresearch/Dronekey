@@ -56,6 +56,18 @@
 		border: 0.3vw solid black;
 	}
 
+	#advanced-instructions {
+		background-color: #FFFFFF;
+		font-size:3vh; 
+		top: 5vh; 
+		left:50vw; 
+		width:auto;
+		white-space: nowrap;
+		padding: 1vw;
+		border: 0.3vw solid black;
+		visibility: hidden;
+	}
+
 
 </style>
 
@@ -63,10 +75,15 @@
 <body>
 	
 	<div id ="gridzone" style="height: 100vh;"></div>
+	<div class="arbitrary" id="advanced-instructions">
+		<span style="font-size:2vh;">Advanced Instructions:</span><br>
+		<div id="instructions-text" style="font-size:1vh;"></div>
+	</div>
+
 	<div class="arbitrary" id="mainmenu"><span id="thetitle" style="font-size:8vh;">Emojidrone</span><br>
 		<span style="font-size:2vh;"><i>start typing!</i></span>
 		<br>
-		<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am">
+		<br><b><span id="chordorscale">Chord name:</span></b> <span id="input"><input type="text" style="width:7vw" id="chordname" value="Am"></span>
 		<button id="playbutton">Go!</button>
 <br>
 	<select id="bodycolor">
@@ -98,7 +115,7 @@
 		
 
 <br>		
-		<span style="font-size:1.25vh;"><a target= "_blank" href="https://github.com/karaokeresearch/Emojidrone"><i>source and instructions</i></a> - <a href="#" id="gentitle">generate title</a></span>
+		<span style="font-size:1.25vh;"><a target= "_blank" href="https://github.com/karaokeresearch/Emojidrone"><i>source and instructions</i></a> - <a href="#" id="gentitle">generate title</a> - <a href="#" id="advanced">advanced mode off</a></span>
 
 	</div>
 
