@@ -29,11 +29,16 @@ var reducedListOfSVGs = [];
 var leftTop = [];
 var iconSize = [];
 var sound = [];
-var chord = "Am";
+var chord = "Am7";
+var scale; //teoria scale object
+var chords = []; 
 var tuna;
 var category = {};
-
-
+var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
+var advanced = false;
+var playing = false;
+var functionToggle = false;
+var functionToggleKey = 192 //grave accent/tilde
 
 var embiggen = function(kNum) { //key has been pressed, make it big.
 	var leftRandom;
@@ -86,31 +91,24 @@ var embiggen = function(kNum) { //key has been pressed, make it big.
 };
 
 
+var findChordsInScale = function(scale) {
+	/* takes teoria scale object and returns array of 
+		teoria chord objects diatonic to the scale, along with some other
+		useful chords (V7V, eg)
+	*/
 
-
-var findChordNotes = function(whichChord) { //Returns an array of all the note values in the chord for two octives. A is zero
-	var chordNotes = [];
-	var keepgoing = true;
-	var tchord;
-	try {
-		tchord = teoria.chord(whichChord);
-	} catch (err) {
-		keepgoing = false;
-	}
-
-	if (keepgoing) {
-
-		for (var i = 0; i < tchord.notes().length; i++) {
-			chordNotes.push((tchord.notes()[i].key() - 37));
-		}
-		for (var i = 0; i < tchord.notes().length; i++) {
-			chordNotes.push(((tchord.notes()[i].key() - 25)));
-		}
-		//chordNotes.sort(function(a, b){return a-b});
-	}
-	return chordNotes;
-};
-
+	var roots = scale.notes(); //notes of the scale serve as roots of the chords
+	return [
+		teoria.chord(roots[0], "maj7") //Imaj7
+		,teoria.chord(roots[1], "m7") //iim7
+		,teoria.chord(roots[2], "m7") //iiim7
+		,teoria.chord(roots[3], "maj7") //IVmaj7
+		,teoria.chord(roots[4], "7") //V7
+		,teoria.chord(roots[5], "m7") //vimin7
+		,teoria.chord(roots[6], "m7b5") //vii half-diminished
+		,teoria.chord(roots[4].interval("P5"), "7") //V7V
+	];
+}
 
 var launchIntoFullscreen = function(element) {
 	if (element.requestFullscreen) {
@@ -123,30 +121,6 @@ var launchIntoFullscreen = function(element) {
 		element.msRequestFullscreen();
 	}
 };
-
-
-
-
-var noteValue = {
-	"A": 0,
-	"A#": 1,
-	"Bb": 1,
-	"B": 2,
-	"C": 3,
-	"C#": 4,
-	"Db": 4,
-	"D": 5,
-	"D#": 6,
-	"Eb": 6,
-	"E": 7,
-	"F": 8,
-	"F#": 9,
-	"Gb": 9,
-	"G": 10,
-	"G#": 11,
-	"Ab": 11
-};
-
 
 var loadTheGrid = function() {
 	var theGrid = "";
@@ -213,72 +187,90 @@ callback();
 };
 
 var loadInstrument = function() {
+	
 	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
-	var chordNotes = findChordNotes(chord);
-	var k = 0;
-	for (var i = 0; i < 10; i++) { //bank
-		var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
-		var shiftUp = false; //should we use a higher octave?
-		for (var j = 0; j < 4; j++) { //slot
-			var offset = noteValue[myAudioFiles[r].note];
-			var rate;
-			if (i < -1) { //left side of the keyboard is lower octaves, generally //getting rid of it for now since it's annoying. Set 300 to 6 to put back
-				rate = Math.pow(2, (1 + (((chordNotes[j] - offset) - 24) / 12))) / 2;
-			} else {
-				rate = Math.pow(2, (1 + (((chordNotes[j] - offset) - 12) / 12))) / 2;
+	
+	var finalAudioFiles = []; //store the randomly selected audio files ahead of time
+
+	for (i = 0; i < 10; i++) {
+		finalAudioFiles.push(myAudioFiles.splice(Math.floor(Math.random() * myAudioFiles.length), 1)[0])
+	}
+	
+	//normal mode we only need the one chord selected by the user. 
+	//in advanced mode we need all the diatonic chords
+	chords = (advanced ? findChordsInScale(scale) : [teoria.chord(chord, 3)]);
+	//index 'm' represents which chord is being built
+	for (m = 0; m < (advanced ? chords.length : 1); m++) { //only loop through once if not in advanced mode
+		sound[m] = [];
+		var c = chords[m];
+		
+		var k = 0;
+		for (var i = 0; i < 10; i++) { //bank
+			//var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
+			var shiftUp = false; //should we use a higher octave?
+			for (var j = 0; j < 4; j++) { //slot
+				//if we are working with a triad, add the root one octave up to the end of the chord
+				var triad = (j >= c.notes().length);
+
+				var baseNote = teoria.note(finalAudioFiles[i].note); //the note the sample is in
+				var goalNote = c.notes()[triad ? 0 : j]; //the note we want to play th sample at			
+				var rate; //multiply baseNote by this to get pitch to goalNote
+				
+				rate = (goalNote.fq() / (baseNote.fq() * 4)) * (triad ? 2 : 1);
+
+				
+				if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
+					rate = rate * 2;
+					shiftUp = true;
+				}
+				if (sound[m][k]) {
+					sound[m][k].unload();
+				}
+
+				var myVolume;
+				if (!finalAudioFiles[i].volume) {
+					myVolume = 1;
+				} else {
+					myVolume = finalAudioFiles[i].volume;
+				}
+
+				var howlParams;
+				if (stereo) {
+					howlParams = {
+						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
+						stereo: -0.5 + (i * 0.1),
+						volume: 0.2 * myVolume,
+						rate: rate
+					};
+					(function(hp, em, kay) { //stupid closures because javascript was designed by genius morons. 
+
+						$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
+							hp.onload = next;
+							sound[em][kay] = new Howl(hp);
+						});
+					})(howlParams, m, k);
+
+
+				} else {
+					howlParams = {
+						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
+						volume: 0.2 * myVolume,
+						rate: rate
+					};
+					(function(hp, em, kay) {
+
+						$(document.body).queue("audioLoad", function(next) {
+							hp.onload = next;
+							sound[em][kay] = new Howl(hp);
+						});
+					})(howlParams, m, k);
+
+
+				}
+				k++;
 			}
-			//console.log(rate);
-			if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
-				rate = rate * 2;
-				shiftUp = true;
-			}
-			if (sound[k]) {
-				sound[k].unload();
-			}
-
-			var myVolume;
-			if (!myAudioFiles[r].volume) {
-				myVolume = 1;
-			} else {
-				myVolume = myAudioFiles[r].volume;
-			}
-
-			var howlParams;
-			if (stereo) {
-				howlParams = {
-					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
-					stereo: -0.5 + (i * 0.1),
-					volume: 0.2 * myVolume,
-					rate: rate
-				};
-				(function(hp, kay) { //stupid closures because javascript was designed by genius morons. 
-
-					$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
-						hp.onload = next;
-						sound[kay] = new Howl(hp);
-					});
-				})(howlParams, k);
-
-
-			} else {
-				howlParams = {
-					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
-					volume: 0.2 * myVolume,
-					rate: rate
-				};
-				(function(hp, kay) {
-
-					$(document.body).queue("audioLoad", function(next) {
-						hp.onload = next;
-						sound[kay] = new Howl(hp);
-					});
-				})(howlParams, k);
-
-
-			}
-			k++;
+			//myAudioFiles.splice(r, 1);
 		}
-		myAudioFiles.splice(r, 1);
 	}
 	$(document.body).dequeue("audioLoad");
 };
@@ -289,11 +281,19 @@ function exitHandler() //what happens when you enter or exit full screen
 {
 	if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
 		$("#mainmenu").css("visibility", "hidden");
+		$("#advanced-instructions").css("visibility", "hidden");
 		setTimeout(function(){$("*").css("cursor", "none");},500);		
 	} else {
 		$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
+		if (advanced) {
+			$("#advanced-instructions").css("visibility", "visible");
+		}
+		else {
+			$("#advanced-instructions").css("visibility", "hidden");
+		}
 		$("*").css("cursor", "default");
+		playing = false;
 	}
 }
 
@@ -405,9 +405,19 @@ var toTitleCase = function(str){
 
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
+	var instructionsArray = ["Select a scale from the drop-down menu and click Go!"
+		,"Use the numpad keys 1-7 to switch between the scale's diatonic 7th chords as you play."
+		,"Hold the ~ key to activate extra functionality:"
+		,"* Use the number row to switch between chords if you don't have a numpad."
+		,"* More to come..."];
+	var instructionsHTML = "";
+	instructionsArray.forEach(function(element) {
+		instructionsHTML += "<div>" + element + "</div>"
+	});
+	$("#instructions-text").html(instructionsHTML);
 
 	//let's load some instruments!
-	loadInstrument();
+	//loadInstrument();
 	loadEmoji($("#emojiset").val());
 
 	if (fx) {
@@ -420,36 +430,90 @@ $(document).ready(function() { //let's do this!
 			cutoff: 2000, //cutoff frequency of the built in lowpass-filter. 20 to 22050
 			bypass: 0
 		});
-		Howler.addEffect(delay); //delay effects
+		Howler.addEffect(delay); //delay effects		
 	}
-
-
 
 		$("#playbutton").click(function(event) {
 			launchIntoFullscreen(document.documentElement); // the whole page
 			$('body').css('background-color', $("#bodycolor").val());
-			chord = $("#chordname").val();
+			if (!advanced) { chord = $("#chordname").val(); }
+			else { scale = teoria.scale($("#scale").val(), "major")}
 			loadInstrument();
 			loadEmoji($("#emojiset").val());
+			playing = true;
+			currentChord = 0;
 		});
 
 		$("#gentitle").click(function(event) {
 			$("#thetitle").html(toTitleCase(titleMaker()));
 		});
-		
+
+		$("#advanced").click(function(event) {
+			if (!advanced) {
+				advanced = true;
+				
+				$("#advanced").text("advanced mode on");
+				$("#advanced-instructions").css("visibility", "visible");
+				$("#chordorscale").text("Scale:");
+				$("#input").html("<select id='scale'> \
+					<option value='C'>C Major / A Minor</option> \
+					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
+					<option value='D'>D Major / B Minor</option> \
+					<option value='D#'>D#/Eb Major / C Minor</option> \
+					<option value='E'>E Major / C#/Db Minor</option> \
+					<option value='F'>F Major / D Minor</option> \
+					<option value='F#'>F#/Gb Major / D#/Eb Minor</option> \
+					<option value='G'>G Major / E Minor</option> \
+					<option value='G#'>G#/Ab Major / F Minor</option> \
+					<option value='A'>A Major / F#/Gb Minor</option> \
+					<option value='A#'>A#/Gb Major / G Minor</option> \
+					<option value='B'>B Major / G#/Ab Minor</option> \
+					</select>");				
+			}
+			else {
+				advanced = false;
+				$("#advanced").text("advanced mode off");
+				$("#advanced-instructions").css("visibility", "hidden");
+				$("#chordorscale").text("Chord:");
+				$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
+			}
+		});
 		
 
-
+	$(document).on('keyup', function(event) {
+		var actualKey = (event.which);
+		if (actualKey == functionToggleKey) { //toggle function key off
+			functionToggle = false;
+		}
+	});
 	$(document).on('keydown', function(event) { //key is pressed
+		
 		if (document.activeElement.tagName == "BODY") {
 			event.preventDefault();
 		}
 		var actualKey = (event.which);
 
-		if (keyMap[actualKey] > -1) {
-			embiggen(keyMap[actualKey]);
-			sound[keyMap[actualKey]].play();
-			//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+		if (actualKey == functionToggleKey) { //toggle function key on
+			functionToggle = true;
+		}
+
+		if (playing && !functionToggle) {
+
+			if (actualKey in keyMap && keyMap[actualKey] > -1) {
+				embiggen(keyMap[actualKey]);
+				sound[currentChord][keyMap[actualKey]].play();
+				//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
+			}
+			else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+				currentChord = chordMap[actualKey];
+			}
+		}
+		else if (playing) { //functionToggle commands
+			//switch chords in advanced mode with non-numpad numeric keys
+			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+				currentChord = chordMap[actualKey];
+			}
+
 		}
 	});
 
