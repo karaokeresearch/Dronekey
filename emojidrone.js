@@ -36,7 +36,6 @@ var tuna;
 var category = {};
 var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
 var advanced = false;
-var playing = false;
 var functionToggle = false;
 var functionToggleKey = 192 //grave accent/tilde
 
@@ -293,7 +292,6 @@ function exitHandler() //what happens when you enter or exit full screen
 			$("#advanced-instructions").css("visibility", "hidden");
 		}
 		$("*").css("cursor", "default");
-		playing = false;
 	}
 }
 
@@ -417,7 +415,7 @@ $(document).ready(function() { //let's do this!
 	$("#instructions-text").html(instructionsHTML);
 
 	//let's load some instruments!
-	//loadInstrument();
+	loadInstrument();
 	loadEmoji($("#emojiset").val());
 
 	if (fx) {
@@ -440,7 +438,6 @@ $(document).ready(function() { //let's do this!
 			else { scale = teoria.scale($("#scale").val(), "major")}
 			loadInstrument();
 			loadEmoji($("#emojiset").val());
-			playing = true;
 			currentChord = 0;
 		});
 
@@ -497,7 +494,7 @@ $(document).ready(function() { //let's do this!
 			functionToggle = true;
 		}
 
-		if (playing && !functionToggle) {
+		if (!functionToggle) {
 
 			if (actualKey in keyMap && keyMap[actualKey] > -1) {
 				embiggen(keyMap[actualKey]);
@@ -508,7 +505,7 @@ $(document).ready(function() { //let's do this!
 				currentChord = chordMap[actualKey];
 			}
 		}
-		else if (playing) { //functionToggle commands
+		else { //functionToggle commands
 			//switch chords in advanced mode with non-numpad numeric keys
 			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chordMap[actualKey];
