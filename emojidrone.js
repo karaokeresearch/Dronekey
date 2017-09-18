@@ -29,15 +29,18 @@ var reducedListOfSVGs = [];
 var leftTop = [];
 var iconSize = [];
 var sound = [];
-var chord = "Am7";
+var instruments = [];
+var chord = teoria.chord("Am");
 var scale; //teoria scale object
 var chords = []; 
 var tuna;
 var category = {};
-var currentChord = 0; //0:I 1:ii 2:iii ... 6:vii half diminished
+var currentChord; //teoria chord object
 var advanced = false;
+var playing = false;
 var functionToggle = false;
 var functionToggleKey = 192 //grave accent/tilde
+var defaultOctave = 6; //higher value makes for lower pitchq
 
 var embiggen = function(kNum) { //key has been pressed, make it big.
 	var leftRandom;
@@ -92,21 +95,37 @@ var embiggen = function(kNum) { //key has been pressed, make it big.
 
 var findChordsInScale = function(scale) {
 	/* takes teoria scale object and returns array of 
-		teoria chord objects diatonic to the scale, along with some other
-		useful chords (V7V, eg)
+		teoria chord objects diatonic to the scale
 	*/
 
 	var roots = scale.notes(); //notes of the scale serve as roots of the chords
+
+	for (i = 0; i < roots.length; i++) {//normalize everything to sharp or natural accidentals
+		roots[i] = normalizeNote(roots[i], "#");
+	}
+
+	var major = (scale.name == "major"); //are we in a major scale? if not, assume natural minor
 	return [
-		teoria.chord(roots[0], "maj7") //Imaj7
-		,teoria.chord(roots[1], "m7") //iim7
-		,teoria.chord(roots[2], "m7") //iiim7
-		,teoria.chord(roots[3], "maj7") //IVmaj7
-		,teoria.chord(roots[4], "7") //V7
-		,teoria.chord(roots[5], "m7") //vimin7
-		,teoria.chord(roots[6], "m7b5") //vii half-diminished
-		,teoria.chord(roots[4].interval("P5"), "7") //V7V
+		teoria.chord(roots[0], major ? "maj7" : "m7") 
+		,teoria.chord(roots[1], major ? "m7" : "m7b5") 
+		,teoria.chord(roots[2], major ? "m7" : "maj7") 
+		,teoria.chord(roots[3], major ? "maj7" : "m7") 
+		,teoria.chord(roots[4], major ? "7" : "m7") 
+		,teoria.chord(roots[5], major ? "m7" : "maj7") 
+		,teoria.chord(roots[6], major ? "m7b5" : "7")		
 	];
+}
+function setScaleFromChord(chord) {
+	var tonic = teoria.note(chord.notes()[0]);
+	var name;
+	if (chord.quality() === "major" || chord.quality() === "minor") {
+		name = chord.quality();
+	}
+	else {
+		name = "major";
+	}
+	scale = teoria.scale(tonic, name);
+	chords = findChordsInScale(scale);
 }
 
 var launchIntoFullscreen = function(element) {
@@ -185,95 +204,134 @@ var generateReducedListOfSVGs = function(callback) { //looks at category, which 
 callback();
 };
 
-var loadInstrument = function() {
-	
+var loadInstruments = function() {	
+
+	currentChord = chord;
 	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
-	
-	var finalAudioFiles = []; //store the randomly selected audio files ahead of time
+	console.log("loading instruments..");
 
+	//clear any existing instruments
+	instruments.length = 0;
+
+	var instrument;
 	for (i = 0; i < 10; i++) {
-		finalAudioFiles.push(myAudioFiles.splice(Math.floor(Math.random() * myAudioFiles.length), 1)[0])
-	}
-	
-	//normal mode we only need the one chord selected by the user. 
-	//in advanced mode we need all the diatonic chords
-	chords = (advanced ? findChordsInScale(scale) : [teoria.chord(chord, 3)]);
-	//index 'm' represents which chord is being built
-	for (m = 0; m < (advanced ? chords.length : 1); m++) { //only loop through once if not in advanced mode
-		sound[m] = [];
-		var c = chords[m];
+		instruments.push({});
+		//load random instrument file
+		instrument = myAudioFiles.splice(Math.floor(Math.random() * myAudioFiles.length), 1)[0];		
+		var howlParams;
 		
-		var k = 0;
-		for (var i = 0; i < 10; i++) { //bank
-			//var r = Math.floor(Math.random() * myAudioFiles.length); //random instrument
-			var shiftUp = false; //should we use a higher octave?
-			for (var j = 0; j < 4; j++) { //slot
-				//if we are working with a triad, add the root one octave up to the end of the chord
-				var triad = (j >= c.notes().length);
+		for (n = 0; n < 12; n++) {
+			var key = noteMap[n]; //get string representation of note
+			var note = instruments[i][key] = {octave: defaultOctave,
+											  tNote: teoria.note(key),
+											  baseNote: teoria.note(instrument.note)
+											};
+			
+			howlParams = {
+				src: ['samples/' + instrument.filename+".ogg", 'samples/' + instrument.filename+".wav"],
+				stereo: (stereo ? -0.5 + (i * 0.1) : 0),
+				volume: (instrument.volume ? 0.2 * instrument.volume : 0.2),
+				rate: getRateFactor(note.baseNote, note.tNote, note.octave)				
+			};
+			note.fq = howlParams.rate * note.baseNote.fq();
+			note.baseRate = howlParams.rate;
 
-				var baseNote = teoria.note(finalAudioFiles[i].note); //the note the sample is in
-				var goalNote = c.notes()[triad ? 0 : j]; //the note we want to play th sample at			
-				var rate; //multiply baseNote by this to get pitch to goalNote
+			(function(hp, n) { //stupid closures because javascript was designed by genius morons. 
 				
-				rate = (goalNote.fq() / (baseNote.fq() * 4)) * (triad ? 2 : 1);
 
-				
-				if (rate < 0.60 || shiftUp) { //essentially making E the "open" position for this all A-sampled instrument. Funny how it worked out that way, but it's the best of both worlds
-					rate = rate * 2;
-					shiftUp = true;
-				}
-				if (sound[m][k]) {
-					sound[m][k].unload();
-				}
+				$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
+					hp.onload = next;
+					n.sound = new Howl(hp);								
+				});
+			})(howlParams, note);
 
-				var myVolume;
-				if (!finalAudioFiles[i].volume) {
-					myVolume = 1;
-				} else {
-					myVolume = finalAudioFiles[i].volume;
-				}
-
-				var howlParams;
-				if (stereo) {
-					howlParams = {
-						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
-						stereo: -0.5 + (i * 0.1),
-						volume: 0.2 * myVolume,
-						rate: rate
-					};
-					(function(hp, em, kay) { //stupid closures because javascript was designed by genius morons. 
-
-						$(document.body).queue("audioLoad", function(next) { //if we load the sounds sequentially, it uses 75% less bandwidth
-							hp.onload = next;
-							sound[em][kay] = new Howl(hp);
-						});
-					})(howlParams, m, k);
-
-
-				} else {
-					howlParams = {
-						src: ['samples/' + finalAudioFiles[i].filename+".ogg", 'samples/' + finalAudioFiles[i].filename+".wav"],
-						volume: 0.2 * myVolume,
-						rate: rate
-					};
-					(function(hp, em, kay) {
-
-						$(document.body).queue("audioLoad", function(next) {
-							hp.onload = next;
-							sound[em][kay] = new Howl(hp);
-						});
-					})(howlParams, m, k);
-
-
-				}
-				k++;
-			}
-			//myAudioFiles.splice(r, 1);
+			$(document.body).dequeue("audioLoad");	
 		}
+		
 	}
-	$(document.body).dequeue("audioLoad");
-};
+}
 
+function normalizeNote(note, accidental) {
+	//takes teoria note object and string for desired accidental and normalizes note to desired accidentals (Db -> C# e.g.)
+	//or natural if possible.(B#->C natural e.g.). returns normalized note object
+
+	if (note.accidental() === "") { return note; } //first, return natural notes unaltered
+
+	var enharmonics = note.enharmonics(); //we will need to look through these in all other cases
+	
+	if (note.accidental() === accidental) { //check if it already has desired accidental...
+		//if there is a natural enharmonic equivalent, return that...
+		for (e = 0; e < enharmonics.length; e++) {
+			if (enharmonics[e].accidental() === "") {
+				return enharmonics[e];
+			}
+		}
+		//...otherwise return the note as is
+		return note;
+	}
+	//...otherwise find the note's enharmonic equivalent with a natural or desired accidental
+	var accidentalIndex = -1; //save the index of an enharmonic with desired accidental in case 
+								//there is no natural enharmonic
+	for (e = 0; e < enharmonics.length; e++) {
+			if (enharmonics[e].accidental() === "") { //if we find natural enharmonic, immediately return it...
+				return enharmonics[e];
+			}
+			else if (enharmonics[e].accidental() === accidental) {//...else keep track of enharmonics with desired accidental
+				accidentalIndex = e;
+			}
+		}
+		//once it is determined that there are no natural enharmonics, return the one with desired accidental, if it exists...
+		if (accidentalIndex > -1) { 
+			return enharmonics[accidentalIndex]; 
+		}
+		else { //...else throw error - there should always be an enharmonic with desired accidental
+			throw new Error("no enharmonic natural or desired accidental");
+		}
+}
+
+var getRateFactor = function(base, desired, offset=4) {
+	/*take 2 teoria notes and an offset factor, return number to 
+	multiply base note frequency(times offset factor) by to reach desired note frequency
+	*/
+	return desired.fq() / (base.fq() * offset);
+}
+
+var playInstrument = function(inst, rate=1) {
+	//expects keymap object with instrument and note indices
+	var cinst = inst.instrument;
+	var cnote = inst.note;
+	//first check if the current chord doesn't have the note - trying to play the 4th note of a triad i.e.
+	if (cnote >= currentChord.notes().length) {
+		console.log("shifting up");
+		cnote = 0; //replace note with root note
+		rate = 2; //and play an octave higher
+	}
+
+	//our loaded instruments use # accidentals exclsively - make sure the notes we are playing do the same
+	var note = normalizeNote(currentChord.notes()[cnote], "#");
+	
+	var noteName = note.name() + note.accidental();//string of note name
+	var rt = normalizeNote(currentChord.root, "#");
+	var rootName = rt.name() + rt.accidental();
+
+	var i = instruments[cinst];
+	console.log("note:" + noteName);
+
+	//check if note is of a lower frequency than the root note
+	if (i[noteName].fq < i[rootName].fq) {
+		rate = 2; //play an octave higher if so
+	}
+	s = i[noteName].sound;
+	s.onend = function(rate, rateval) {
+		rate = rateval;
+		}(s.rate, i[noteName].baseRate);
+
+	s.rate(i[noteName].baseRate * rate);
+	//console.log("adjusted rate:" + s.rate());
+	s.play();
+	
+	//s.rate(originalRate);
+}
 
 
 function exitHandler() //what happens when you enter or exit full screen
@@ -292,6 +350,7 @@ function exitHandler() //what happens when you enter or exit full screen
 			$("#advanced-instructions").css("visibility", "hidden");
 		}
 		$("*").css("cursor", "default");
+		
 	}
 }
 
@@ -415,7 +474,7 @@ $(document).ready(function() { //let's do this!
 	$("#instructions-text").html(instructionsHTML);
 
 	//let's load some instruments!
-	loadInstrument();
+	loadInstruments();
 	loadEmoji($("#emojiset").val());
 
 	if (fx) {
@@ -436,9 +495,10 @@ $(document).ready(function() { //let's do this!
 			$('body').css('background-color', $("#bodycolor").val());
 			if (!advanced) { chord = $("#chordname").val(); }
 			else { scale = teoria.scale($("#scale").val(), "major")}
-			loadInstrument();
+			loadInstruments();
 			loadEmoji($("#emojiset").val());
-			currentChord = 0;
+			
+			currentChord = teoria.chord(chord);
 		});
 
 		$("#gentitle").click(function(event) {
@@ -448,11 +508,15 @@ $(document).ready(function() { //let's do this!
 		$("#advanced").click(function(event) {
 			if (!advanced) {
 				advanced = true;
-				
+				currentChord = teoria.chord($("#chordname").val());
+				if (currentChord.quality() == "major" || currentChord.quality() == "minor") {
+					scale = teoria.scale(currentChord.simple()[0], currentChord.quality());
+					chords = findChordsInScale(scale);
+				}
 				$("#advanced").text("advanced mode on");
 				$("#advanced-instructions").css("visibility", "visible");
 				$("#chordorscale").text("Scale:");
-				$("#input").html("<select id='scale'> \
+				/*$("#input").html("<select id='scale'> \
 					<option value='C'>C Major / A Minor</option> \
 					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
 					<option value='D'>D Major / B Minor</option> \
@@ -465,17 +529,28 @@ $(document).ready(function() { //let's do this!
 					<option value='A'>A Major / F#/Gb Minor</option> \
 					<option value='A#'>A#/Gb Major / G Minor</option> \
 					<option value='B'>B Major / G#/Ab Minor</option> \
-					</select>");				
+					</select>");	*/			
 			}
 			else {
 				advanced = false;
 				$("#advanced").text("advanced mode off");
 				$("#advanced-instructions").css("visibility", "hidden");
 				$("#chordorscale").text("Chord:");
-				$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
+				//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
 			}
 		});
 		
+	$(document).on("change keyup", "#chordname", function(){
+		var t = $("#chordname").val();
+		var c = teoria.chord(t);
+		if (c) {
+			currentChord = c;
+
+			if (advanced) {
+				setScaleFromChord(currentChord);
+			}
+		}
+	});
 
 	$(document).on('keyup', function(event) {
 		var actualKey = (event.which);
@@ -495,14 +570,16 @@ $(document).ready(function() { //let's do this!
 		}
 
 		if (!functionToggle) {
+			//user playing note
+			if (actualKey in keyMap) {
+				embiggen(keyMap[actualKey].kNum);
+				playInstrument(keyMap[actualKey]);
 
-			if (actualKey in keyMap && keyMap[actualKey] > -1) {
-				embiggen(keyMap[actualKey]);
-				sound[currentChord][keyMap[actualKey]].play();
 				//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
 			}
+			//user switching chord
 			else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
-				currentChord = chordMap[actualKey];
+				currentChord = chords[chordMap[actualKey]];
 			}
 		}
 		else { //functionToggle commands
