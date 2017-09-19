@@ -30,7 +30,7 @@ var leftTop = [];
 var iconSize = [];
 var sound = [];
 var instruments = [];
-var chord = teoria.chord("Am");
+//var chord = teoria.chord("Am");
 var scale; //teoria scale object
 var chords = []; 
 var tuna;
@@ -96,7 +96,6 @@ var findChordsInScale = function(scale) {
 	/* takes teoria scale object and returns array of 
 		teoria chord objects diatonic to the scale
 	*/
-
 	var roots = scale.notes(); //notes of the scale serve as roots of the chords
 
 	for (i = 0; i < roots.length; i++) {//normalize everything to sharp or natural accidentals
@@ -115,7 +114,10 @@ var findChordsInScale = function(scale) {
 	];
 }
 function setScaleFromChord(chord) {
-	var tonic = teoria.note(chord.notes()[0]);
+	
+	var tonic = chord.notes()[0];	
+	tonic = normalizeNote(tonic, "#");
+	
 	var name;
 	if (chord.quality() === "major" || chord.quality() === "minor") {
 		name = chord.quality();
@@ -124,7 +126,10 @@ function setScaleFromChord(chord) {
 		name = "major";
 	}
 	scale = teoria.scale(tonic, name);
+	//console.log(scale.tonic.name());
 	chords = findChordsInScale(scale);
+	currentChord = chords[0];
+	//console.log(currentChord.name);
 }
 
 var launchIntoFullscreen = function(element) {
@@ -203,9 +208,8 @@ var generateReducedListOfSVGs = function(callback) { //looks at category, which 
 callback();
 };
 
-var loadInstruments = function() {	
-
-	currentChord = chord;
+var loadInstruments = function() {
+	currentChord = teoria.chord($("#chordname").val());
 	var myAudioFiles = audioFiles.slice(); //make a local copy so we can splice out individual elements as they are used
 	console.log("loading instruments..");
 
@@ -266,15 +270,15 @@ function octaveShift(shift) {
 function normalizeNote(note, accidental) {
 	//takes teoria note object and string for desired accidental and normalizes note to desired accidentals (Db -> C# e.g.)
 	//or natural if possible.(B#->C natural e.g.). returns normalized note object
-
-	if (note.accidental() === "") { return note; } //first, return natural notes unaltered
+	//console.log(note.name());
+	if (note.accidental() == "") { return note; } //first, return natural notes unaltered
 
 	var enharmonics = note.enharmonics(); //we will need to look through these in all other cases
 	
-	if (note.accidental() === accidental) { //check if it already has desired accidental...
+	if (note.accidental() == accidental) { //check if it already has desired accidental...
 		//if there is a natural enharmonic equivalent, return that...
 		for (e = 0; e < enharmonics.length; e++) {
-			if (enharmonics[e].accidental() === "") {
+			if (enharmonics[e].accidental() == "") {
 				return enharmonics[e];
 			}
 		}
@@ -285,10 +289,10 @@ function normalizeNote(note, accidental) {
 	var accidentalIndex = -1; //save the index of an enharmonic with desired accidental in case 
 								//there is no natural enharmonic
 	for (e = 0; e < enharmonics.length; e++) {
-			if (enharmonics[e].accidental() === "") { //if we find natural enharmonic, immediately return it...
+			if (enharmonics[e].accidental() == "") { //if we find natural enharmonic, immediately return it...
 				return enharmonics[e];
 			}
-			else if (enharmonics[e].accidental() === accidental) {//...else keep track of enharmonics with desired accidental
+			else if (enharmonics[e].accidental() == accidental) {//...else keep track of enharmonics with desired accidental
 				accidentalIndex = e;
 			}
 		}
@@ -483,6 +487,8 @@ $(document).ready(function() { //let's do this!
 	$("#instructions-text").html(instructionsHTML);
 
 	//let's load some instruments!
+	currentChord = teoria.chord($("#chordname").val());
+	1
 	loadInstruments();
 	loadEmoji($("#emojiset").val());
 
@@ -502,12 +508,12 @@ $(document).ready(function() { //let's do this!
 		$("#playbutton").click(function(event) {
 			launchIntoFullscreen(document.documentElement); // the whole page
 			$('body').css('background-color', $("#bodycolor").val());
-			if (!advanced) { chord = $("#chordname").val(); }
-			else { scale = teoria.scale($("#scale").val(), "major")}
+			//if (!advanced) { chord = $("#chordname").val(); }
+			//else { scale = teoria.scale($("#scale").val(), "major")}
 			loadInstruments();
 			loadEmoji($("#emojiset").val());
 			
-			currentChord = teoria.chord(chord);
+			//currentChord = teoria.chord(chord);
 		});
 
 		$("#gentitle").click(function(event) {
@@ -515,13 +521,13 @@ $(document).ready(function() { //let's do this!
 		});
 
 		$("#advanced").click(function(event) {
+
 			if (!advanced) {
 				advanced = true;
 				currentChord = teoria.chord($("#chordname").val());
-				if (currentChord.quality() == "major" || currentChord.quality() == "minor") {
-					scale = teoria.scale(currentChord.simple()[0], currentChord.quality());
-					chords = findChordsInScale(scale);
-				}
+				console.log(currentChord.name);
+				setScaleFromChord(currentChord);
+				
 				$("#advanced").text("advanced mode on");
 				$("#advanced-instructions").css("visibility", "visible");
 				$("#chordorscale").text("Scale Name:");
