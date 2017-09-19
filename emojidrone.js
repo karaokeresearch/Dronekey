@@ -117,7 +117,7 @@ function setScaleFromChord(chord) {
 	
 	var tonic = chord.notes()[0];	
 	tonic = normalizeNote(tonic, "#");
-	
+
 	var name;
 	if (chord.quality() === "major" || chord.quality() === "minor") {
 		name = chord.quality();
@@ -130,6 +130,11 @@ function setScaleFromChord(chord) {
 	chords = findChordsInScale(scale);
 	currentChord = chords[0];
 	//console.log(currentChord.name);
+	setScaleLabel(scale);
+	
+}
+function setScaleLabel(scale) {
+	$("#scale").text("Scale:" + scale.tonic.name().toUpperCase() + scale.tonic.accidental() + " " + scale.name);
 }
 
 var launchIntoFullscreen = function(element) {
@@ -266,6 +271,19 @@ function octaveShift(shift) {
 		};
 	}
 }
+function intervalShift(interval) {
+	//expects teoria interval object
+	if (!advanced) {
+		//normalize new currentChord  so that frequent shiftng doesnt send the accidental all over the place.
+		currentChord = normalizeChord(currentChord.transpose(interval), "#");
+		$("#chordname").val(currentChord.name);
+	}
+	else {
+		currentChord = normalizeChord(chords[0].transpose(interval), "#");
+		setScaleFromChord(currentChord);
+		$("#chordname").val(currentChord.name);
+	}
+}
 
 function normalizeNote(note, accidental) {
 	//takes teoria note object and string for desired accidental and normalizes note to desired accidentals (Db -> C# e.g.)
@@ -303,6 +321,13 @@ function normalizeNote(note, accidental) {
 		else { //...else throw error - there should always be an enharmonic with desired accidental
 			throw new Error("no enharmonic natural or desired accidental");
 		}
+}
+function normalizeChord(chord, accidental) {
+//same as normalizeNote but for chords
+	var rt = chord.root.name() + chord.root.accidental();
+	var symbol = chord.name.substr(rt.length);
+	
+	return teoria.chord(normalizeNote(chord.root, accidental), symbol);
 }
 
 var getRateFactor = function(base, desired, offset=4) {
@@ -486,6 +511,8 @@ $(document).ready(function() { //let's do this!
 	});
 	$("#instructions-text").html(instructionsHTML);
 
+	$("#scale").css("visibility", "hidden");
+
 	//let's load some instruments!
 	currentChord = teoria.chord($("#chordname").val());
 	1
@@ -527,10 +554,12 @@ $(document).ready(function() { //let's do this!
 				currentChord = teoria.chord($("#chordname").val());
 				console.log(currentChord.name);
 				setScaleFromChord(currentChord);
-				
+				$("#chordname").val(currentChord.name);
 				$("#advanced").text("advanced mode on");
+				$("#scale").css("visibility", "visible");
+				setScaleLabel(scale);
 				$("#advanced-instructions").css("visibility", "visible");
-				$("#chordorscale").text("Scale Name:");
+				//$("#chordorscale").text("Scale Name:");
 				/*$("#input").html("<select id='scale'> \
 					<option value='C'>C Major / A Minor</option> \
 					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
@@ -549,6 +578,7 @@ $(document).ready(function() { //let's do this!
 			else {
 				advanced = false;
 				$("#advanced").text("advanced mode off");
+				$("#scale").css("visibility", "hidden");
 				$("#advanced-instructions").css("visibility", "hidden");
 				$("#chordorscale").text("Chord Name:");
 				//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
@@ -597,6 +627,12 @@ $(document).ready(function() { //let's do this!
 				case 189:
 					octaveShift(-2);
 					break;
+				case 219:
+					intervalShift(teoria.interval.toCoord("P4"));
+					break;
+				case 221:
+					intervalShift(teoria.interval.toCoord("P5"));
+					break;
 				default:
 					break;
 
@@ -611,12 +647,14 @@ $(document).ready(function() { //let's do this!
 			//user switching chord
 			else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chords[chordMap[actualKey]];
+				$("#chordname").val(currentChord.name);
 			}
 		}
 		else { //functionToggle commands
 			//switch chords in advanced mode with non-numpad numeric keys
 			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chordMap[actualKey];
+				$("#chordname").val(currentChord.name);
 			}
 		}
 	});
