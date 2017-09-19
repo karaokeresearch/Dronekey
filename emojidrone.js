@@ -222,7 +222,7 @@ var loadInstruments = function() {
 		
 		for (n = 0; n < 12; n++) {
 			var key = noteMap[n]; //get string representation of note
-			var note = instruments[i][key] = {octave: defaultOctave,
+			var note = instruments[i][key] = {
 											  tNote: teoria.note(key),
 											  baseNote: teoria.note(instrument.note)
 											};
@@ -327,12 +327,9 @@ var playInstrument = function(inst, rate=1) {
 		}(s.rate, i[noteName].baseRate);
 
 	s.rate(i[noteName].baseRate * rate);
-	//console.log("adjusted rate:" + s.rate());
-	s.play();
 	
-	//s.rate(originalRate);
+	s.play();
 }
-
 
 function exitHandler() //what happens when you enter or exit full screen
 {
