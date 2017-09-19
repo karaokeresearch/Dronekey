@@ -37,7 +37,6 @@ var tuna;
 var category = {};
 var currentChord; //teoria chord object
 var advanced = false;
-var playing = false;
 var functionToggle = false;
 var functionToggleKey = 192 //grave accent/tilde
 var defaultOctave = 6; //higher value makes for lower pitchq
@@ -248,6 +247,19 @@ var loadInstruments = function() {
 			$(document.body).dequeue("audioLoad");	
 		}
 		
+	}
+}
+
+function octaveShift(shift) {
+	//expects integer, adds that many octaves (can be negative)
+	var factor = shift > 0 ? shift : -1/shift;
+	for (i = 0; i < instruments.length; i++) {
+
+		for (element in instruments[i]) {
+			instruments[i][element].baseRate *= factor;
+			instruments[i][element].fq *= factor;
+			instruments[i][element].sound.rate(instruments[i][element].sound.rate() * factor);
+		};
 	}
 }
 
@@ -512,7 +524,7 @@ $(document).ready(function() { //let's do this!
 				}
 				$("#advanced").text("advanced mode on");
 				$("#advanced-instructions").css("visibility", "visible");
-				$("#chordorscale").text("Scale:");
+				$("#chordorscale").text("Scale Name:");
 				/*$("#input").html("<select id='scale'> \
 					<option value='C'>C Major / A Minor</option> \
 					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
@@ -532,7 +544,7 @@ $(document).ready(function() { //let's do this!
 				advanced = false;
 				$("#advanced").text("advanced mode off");
 				$("#advanced-instructions").css("visibility", "hidden");
-				$("#chordorscale").text("Chord:");
+				$("#chordorscale").text("Chord Name:");
 				//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
 			}
 		});
@@ -567,6 +579,22 @@ $(document).ready(function() { //let's do this!
 		}
 
 		if (!functionToggle) {
+			//functions without function toggle on
+			console.log(actualKey);
+			switch (actualKey) {
+				case 107: //octave up
+				case 187:
+					console.log(actualKey);
+					octaveShift(2);
+					break;
+				case 109: //octave down
+				case 189:
+					octaveShift(-2);
+					break;
+				default:
+					break;
+
+			}
 			//user playing note
 			if (actualKey in keyMap) {
 				embiggen(keyMap[actualKey].kNum);
@@ -584,7 +612,6 @@ $(document).ready(function() { //let's do this!
 			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chordMap[actualKey];
 			}
-
 		}
 	});
 
