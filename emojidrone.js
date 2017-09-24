@@ -376,16 +376,19 @@ function exitHandler() //what happens when you enter or exit full screen
 {
 	if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
 		$("#mainmenu").css("visibility", "hidden");
-		$("#advanced-instructions").css("visibility", "hidden");
+		$("#advanced-instructions").css("visibility", "hidden");		
+		$("#scale").css("visibility", "hidden");
 		setTimeout(function(){$("*").css("cursor", "none");},500);		
 	} else {
 		$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
 		if (advanced) {
-			$("#advanced-instructions").css("visibility", "visible");
+			$("#advanced-instructions").css("visibility", "visible");			
+			$("#scale").css("visibility", "visible");
 		}
 		else {
 			$("#advanced-instructions").css("visibility", "hidden");
+			$("#scale").css("visibility", "hidden");
 		}
 		$("*").css("cursor", "default");
 		

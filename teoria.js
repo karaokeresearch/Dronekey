@@ -47,7 +47,7 @@ function chordConstructor(name, symbol) {
       octave = typeof symbol === 'number' ? symbol.toString(10) : '4';
       return new Chord(Note.fromString(root[0].toLowerCase() + octave),
                             name.substr(root[0].length));
-    }
+    } 
   } else if (name instanceof Note)
     return new Chord(name, symbol);
 
