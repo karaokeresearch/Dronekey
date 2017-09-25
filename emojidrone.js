@@ -372,9 +372,35 @@ var playInstrument = function(inst, rate=1) {
 	s.play();
 }
 
+function dialogBox() {
+	//check if dialog box is already visible, hide everything if so
+	if ($("#mainmenu").css("visibility") == "visible") {
+		$("#mainmenu").css("visibility", "hidden");
+		$("#advanced-instructions").css("visibility", "hidden");
+		$("#scale").css("visibility", "hidden");
+		//setTimeout(function(){$("*").css("cursor", "none");},500);
+	}
+	//otherwise make everything visible
+	else {
+		$("#thetitle").html("Emojidrone");
+		$("#mainmenu").css("visibility", "visible");
+		if (advanced) {
+			$("#advanced-instructions").css("visibility", "visible");			
+			$("#scale").css("visibility", "visible");
+		}
+		else {
+			$("#advanced-instructions").css("visibility", "hidden");
+			$("#scale").css("visibility", "hidden");
+		}
+		//$("*").css("cursor", "default");
+	}
+
+}
+
 function exitHandler() //what happens when you enter or exit full screen
 {
-	if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
+	dialogBox();
+	/*if (document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement) {
 		$("#mainmenu").css("visibility", "hidden");
 		$("#advanced-instructions").css("visibility", "hidden");		
 		$("#scale").css("visibility", "hidden");
@@ -392,7 +418,7 @@ function exitHandler() //what happens when you enter or exit full screen
 		}
 		$("*").css("cursor", "default");
 		
-	}
+	}*/
 }
 
 
@@ -518,7 +544,7 @@ $(document).ready(function() { //let's do this!
 
 	//let's load some instruments!
 	currentChord = teoria.chord($("#chordname").val());
-	1
+	
 	loadInstruments();
 	loadEmoji($("#emojiset").val());
 
@@ -535,58 +561,65 @@ $(document).ready(function() { //let's do this!
 		Howler.addEffect(delay); //delay effects		
 	}
 
-		$("#playbutton").click(function(event) {
-			launchIntoFullscreen(document.documentElement); // the whole page
-			$('body').css('background-color', $("#bodycolor").val());
-			//if (!advanced) { chord = $("#chordname").val(); }
-			//else { scale = teoria.scale($("#scale").val(), "major")}
-			loadInstruments();
-			loadEmoji($("#emojiset").val());
-			
-			//currentChord = teoria.chord(chord);
-		});
+	$("#gridzone").click(function(event){		
+			dialogBox();
+	});
 
-		$("#gentitle").click(function(event) {
-			$("#thetitle").html(toTitleCase(titleMaker()));
-		});
+	$("#playbutton").click(function(event) {
+		launchIntoFullscreen(document.documentElement); // the whole page
+		dialogBox();
+		$('body').css('background-color', $("#bodycolor").val());
+		
 
-		$("#advanced").click(function(event) {
+		//if (!advanced) { chord = $("#chordname").val(); }
+		//else { scale = teoria.scale($("#scale").val(), "major")}
+		//loadInstruments();
+		//loadEmoji($("#emojiset").val());
+		
+		//currentChord = teoria.chord(chord);
+	});
 
-			if (!advanced) {
-				advanced = true;
-				currentChord = teoria.chord($("#chordname").val());
-				console.log(currentChord.name);
-				setScaleFromChord(currentChord);
-				$("#chordname").val(currentChord.name);
-				$("#advanced").text("advanced mode on");
-				$("#scale").css("visibility", "visible");
-				setScaleLabel(scale);
-				$("#advanced-instructions").css("visibility", "visible");
-				//$("#chordorscale").text("Scale Name:");
-				/*$("#input").html("<select id='scale'> \
-					<option value='C'>C Major / A Minor</option> \
-					<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
-					<option value='D'>D Major / B Minor</option> \
-					<option value='D#'>D#/Eb Major / C Minor</option> \
-					<option value='E'>E Major / C#/Db Minor</option> \
-					<option value='F'>F Major / D Minor</option> \
-					<option value='F#'>F#/Gb Major / D#/Eb Minor</option> \
-					<option value='G'>G Major / E Minor</option> \
-					<option value='G#'>G#/Ab Major / F Minor</option> \
-					<option value='A'>A Major / F#/Gb Minor</option> \
-					<option value='A#'>A#/Gb Major / G Minor</option> \
-					<option value='B'>B Major / G#/Ab Minor</option> \
-					</select>");	*/			
-			}
-			else {
-				advanced = false;
-				$("#advanced").text("advanced mode off");
-				$("#scale").css("visibility", "hidden");
-				$("#advanced-instructions").css("visibility", "hidden");
-				$("#chordorscale").text("Chord Name:");
-				//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
-			}
-		});
+	$("#gentitle").click(function(event) {
+		$("#thetitle").html(toTitleCase(titleMaker()));
+	});
+
+	$("#advanced").click(function(event) {
+
+		if (!advanced) {
+			advanced = true;
+			currentChord = teoria.chord($("#chordname").val());
+			console.log(currentChord.name);
+			setScaleFromChord(currentChord);
+			$("#chordname").val(currentChord.name);
+			$("#advanced").text("advanced mode on");
+			$("#scale").css("visibility", "visible");
+			setScaleLabel(scale);
+			$("#advanced-instructions").css("visibility", "visible");
+			//$("#chordorscale").text("Scale Name:");
+			/*$("#input").html("<select id='scale'> \
+				<option value='C'>C Major / A Minor</option> \
+				<option value='C#'>C#/Db Major / A#/Bb Minor</option> \
+				<option value='D'>D Major / B Minor</option> \
+				<option value='D#'>D#/Eb Major / C Minor</option> \
+				<option value='E'>E Major / C#/Db Minor</option> \
+				<option value='F'>F Major / D Minor</option> \
+				<option value='F#'>F#/Gb Major / D#/Eb Minor</option> \
+				<option value='G'>G Major / E Minor</option> \
+				<option value='G#'>G#/Ab Major / F Minor</option> \
+				<option value='A'>A Major / F#/Gb Minor</option> \
+				<option value='A#'>A#/Gb Major / G Minor</option> \
+				<option value='B'>B Major / G#/Ab Minor</option> \
+				</select>");	*/			
+		}
+		else {
+			advanced = false;
+			$("#advanced").text("advanced mode off");
+			$("#scale").css("visibility", "hidden");
+			$("#advanced-instructions").css("visibility", "hidden");
+			$("#chordorscale").text("Chord Name:");
+			//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
+		}
+	});
 		
 	$(document).on("change keyup", "#chordname", function(){
 		var t = $("#chordname").val();
