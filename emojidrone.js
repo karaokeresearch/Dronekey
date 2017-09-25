@@ -363,6 +363,7 @@ var playInstrument = function(inst, rate=1) {
 		rate = 2; //play an octave higher if so
 	}
 	s = i[noteName].sound;
+	//make sure rate is returned to normal value after note is played
 	s.onend = function(rate, rateval) {
 		rate = rateval;
 		}(s.rate, i[noteName].baseRate);
@@ -526,6 +527,60 @@ var toTitleCase = function(str){
     return str.replace(/[^\W_]+[^\s-]+/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
+function reload() {
+	Howler.unload();
+	loadInstruments();
+	loadEmoji($("#emojiset").val());
+}
+
+var doneLoading = function(badStatus) { //takes an array of strings to check load state against.
+	//only resolves once none of the instruments have any state given in badStatus array
+	return new Promise(function(resolve, reject) {
+
+		var ms = 100;
+		var timeElapsed = 0;	
+		var maxTime = 5000;
+		var check = setInterval(function() {
+			var stillLoading = instruments.some(function(instrument) {
+				
+				var notes = Object.keys(instrument);
+				return notes.some(function(note) {
+					if (badStatus.includes(instrument[note].sound.state())) {
+						console.log("still loading");			
+						return true;
+					}
+				});			
+			});
+			if (!stillLoading) {
+				console.log("finished loading!");
+				clearInterval(check);
+				resolve();
+			}
+			timeElapsed += ms;
+			if (timeElapsed > maxTime) {
+				reject(Error("timed out"));
+			}
+
+		}, ms);
+
+	});
+}
+
+function hooray() {
+	var i = 0;
+	var keys = Object.keys(keyMap);
+	var numKeys = Object.keys(keyMap).length;
+
+	function h() {
+		embiggen(keyMap[keys[i]].kNum);
+		playInstrument(keyMap[keys[i]]);
+		i++;
+		if (i < numKeys) {
+			setTimeout(h, 50);
+		}
+	}
+	h();
+}
 
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
@@ -545,8 +600,7 @@ $(document).ready(function() { //let's do this!
 	//let's load some instruments!
 	currentChord = teoria.chord($("#chordname").val());
 	
-	loadInstruments();
-	loadEmoji($("#emojiset").val());
+	reload();
 
 	if (fx) {
 		tuna = new Tuna(Howler.ctx); //prepare reverb
@@ -577,6 +631,12 @@ $(document).ready(function() { //let's do this!
 		//loadEmoji($("#emojiset").val());
 		
 		//currentChord = teoria.chord(chord);
+	});
+	$("#reload").click(function(event) {
+
+		reload();
+		doneLoading(["loading", "unloaded"]).then(hooray);
+		
 	});
 
 	$("#gentitle").click(function(event) {
