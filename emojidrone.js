@@ -137,15 +137,36 @@ function setScaleLabel(scale) {
 	$("#scale").text("Scale:" + scale.tonic.name().toUpperCase() + scale.tonic.accidental() + " " + scale.name);
 }
 
-var launchIntoFullscreen = function(element) {
-	if (element.requestFullscreen) {
-		element.requestFullscreen();
-	} else if (element.mozRequestFullScreen) {
-		element.mozRequestFullScreen();
-	} else if (element.webkitRequestFullscreen) {
-		element.webkitRequestFullscreen();
-	} else if (element.msRequestFullscreen) {
-		element.msRequestFullscreen();
+var isFullScreen = function() {
+	return (document.fullscreenElement && document.fullscreenElement !== null) ||
+        (document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
+        (document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
+        (document.msFullscreenElement && document.msFullscreenElement !== null);
+}
+var fullscreen = function(element) {
+	if (isFullScreen()) {
+		if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        dialogBox();
+	}
+	else {
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen();
+		} else if (element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		}
+		dialogBox("visible");
 	}
 };
 
@@ -373,7 +394,16 @@ var playInstrument = function(inst, rate=1) {
 	s.play();
 }
 
-function dialogBox() {
+function dialogBox(visibility) {
+	//if passed explicit visibility, go with that
+	if (visibility) {
+		$("#mainmenu").css("visibility", visibility);
+		$("#advanced-instructions").css("visibility", advanced ? visibility : "hidden");
+		$("#scale").css("visibility", visibility);
+		return;
+	}
+	//otherwise toggle it.
+
 	//check if dialog box is already visible, hide everything if so
 	if ($("#mainmenu").css("visibility") == "visible") {
 		$("#mainmenu").css("visibility", "hidden");
@@ -566,17 +596,22 @@ var doneLoading = function(badStatus) { //takes an array of strings to check loa
 	});
 }
 
-function hooray() {
+function demoNotes(interval) {
 	var i = 0;
 	var keys = Object.keys(keyMap);
 	var numKeys = Object.keys(keyMap).length;
 
+	//hide menu temporarily
+	dialogBox("hidden");
 	function h() {
 		embiggen(keyMap[keys[i]].kNum);
 		playInstrument(keyMap[keys[i]]);
 		i++;
 		if (i < numKeys) {
-			setTimeout(h, 50);
+			setTimeout(h, interval);
+		}
+		else {
+			dialogBox("visible");
 		}
 	}
 	h();
@@ -619,23 +654,15 @@ $(document).ready(function() { //let's do this!
 			dialogBox();
 	});
 
-	$("#playbutton").click(function(event) {
-		launchIntoFullscreen(document.documentElement); // the whole page
-		dialogBox();
-		$('body').css('background-color', $("#bodycolor").val());
-		
-
-		//if (!advanced) { chord = $("#chordname").val(); }
-		//else { scale = teoria.scale($("#scale").val(), "major")}
-		//loadInstruments();
-		//loadEmoji($("#emojiset").val());
-		
-		//currentChord = teoria.chord(chord);
+	$("#playbutton").click(function(event) {		
+		fullscreen(document.documentElement); // the whole page		
+		$('body').css('background-color', $("#bodycolor").val());		
 	});
+
 	$("#reload").click(function(event) {
 
 		reload();
-		doneLoading(["loading", "unloaded"]).then(hooray);
+		doneLoading(["loading", "unloaded"]).then(demoNotes(50));
 		
 	});
 
