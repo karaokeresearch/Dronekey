@@ -37,6 +37,7 @@ var tuna;
 var category = {};
 var currentChord; //teoria chord object
 var advanced = false;
+var scalesMode = false;
 var functionToggle = false;
 var functionToggleKey = 192 //grave accent/tilde
 var defaultOctave = 6; //higher value makes for lower pitchq
@@ -294,7 +295,7 @@ function octaveShift(shift) {
 }
 function intervalShift(interval) {
 	//expects teoria interval object
-	if (!advanced) {
+	if (!scalesMode) {
 		//normalize new currentChord  so that frequent shiftng doesnt send the accidental all over the place.
 		currentChord = normalizeChord(currentChord.transpose(interval), "#");
 		$("#chordname").val(currentChord.name);
@@ -617,13 +618,39 @@ function demoNotes(interval) {
 	h();
 }
 
+function scalesModeToggle(onoff) {
+	if (onoff) {
+		scalesMode = onoff;
+		$("#scale").css("visibility", onoff ? "visible" : "hidden");
+		return;
+	}
+
+	if (scalesMode) {
+		scalesMode = false;
+		$("#scale").css("visibility", "hidden");
+	}
+	else {
+		scalesMode = true;
+		$("#scale").css("visibility", "visible")
+		setScaleFromChord(currentChord);
+		$("#chordname").val(currentChord.name);
+		setScaleLabel(scale);
+	}
+}
+
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
-	var instructionsArray = ["Select a scale from the drop-down menu and click Go!"
-		,"Use the numpad keys 1-7 to switch between the scale's diatonic 7th chords as you play."
+	var instructionsArray = ["Use +/- to change your octave."
+		,"Use the brackets ([, ]) to cycle up and down the circle of fifths."
+		,"<br>"
 		,"Hold the ~ key to activate extra functionality:"
-		,"* Use the number row to switch between chords if you don't have a numpad."
-		,"* More to come..."];
+		,"* Use the 'S' key to toggle scales mode."
+		,"* While in scales mode, use the number row to switch between chords if you don't have a numpad."
+		,"* More to come..."
+		,"<br>"
+		,"Scales Mode:"
+		,"Use numpad 1-7 to switch between diatonic chords of the current scale"
+		,"Use the brackets to change scales by 5ths, or enter a new tonic chord"];
 	var instructionsHTML = "";
 	instructionsArray.forEach(function(element) {
 		instructionsHTML += "<div>" + element + "</div>"
@@ -674,13 +701,12 @@ $(document).ready(function() { //let's do this!
 
 		if (!advanced) {
 			advanced = true;
-			currentChord = teoria.chord($("#chordname").val());
+			//currentChord = teoria.chord($("#chordname").val());
 			console.log(currentChord.name);
-			setScaleFromChord(currentChord);
-			$("#chordname").val(currentChord.name);
+			
 			$("#advanced").text("advanced mode on");
-			$("#scale").css("visibility", "visible");
-			setScaleLabel(scale);
+			//$("#scale").css("visibility", "visible");
+			
 			$("#advanced-instructions").css("visibility", "visible");
 			//$("#chordorscale").text("Scale Name:");
 			/*$("#input").html("<select id='scale'> \
@@ -700,10 +726,11 @@ $(document).ready(function() { //let's do this!
 		}
 		else {
 			advanced = false;
+			scalesModeToggle(false);
 			$("#advanced").text("advanced mode off");
-			$("#scale").css("visibility", "hidden");
+			//$("#scale").css("visibility", "hidden");
 			$("#advanced-instructions").css("visibility", "hidden");
-			$("#chordorscale").text("Chord Name:");
+			//$("#chordorscale").text("Chord Name:");
 			//$("#input").html('<input type="text" style="width:7vw" id="chordname" value="Am">');
 		}
 	});
@@ -732,34 +759,35 @@ $(document).ready(function() { //let's do this!
 			event.preventDefault();
 		}
 		var actualKey = (event.which);
-
+		console.log(actualKey);
 		if (actualKey == functionToggleKey) { //toggle function key on
 			functionToggle = true;
 		}
 
 		if (!functionToggle) {
-			//functions without function toggle on
-			console.log(actualKey);
-			switch (actualKey) {
-				case 107: //octave up
-				case 187:
-					console.log(actualKey);
-					octaveShift(2);
-					break;
-				case 109: //octave down
-				case 189:
-					octaveShift(-2);
-					break;
-				case 219:
-					intervalShift(teoria.interval.toCoord("P4"));
-					break;
-				case 221:
-					intervalShift(teoria.interval.toCoord("P5"));
-					break;
-				default:
-					break;
+			//functions without function toggle on - still require advanced mode to be on
+			if (advanced) {
+				switch (actualKey) {
+					case 107: //octave up
+					case 187:
+						console.log(actualKey);
+						octaveShift(2);
+						break;
+					case 109: //octave down
+					case 189:
+						octaveShift(-2);
+						break;
+					case 219:
+						intervalShift(teoria.interval.toCoord("P4"));
+						break;
+					case 221:
+						intervalShift(teoria.interval.toCoord("P5"));
+						break;
+					default:
+						break;
 
-			}
+				}	
+			}		
 			//user playing note
 			if (actualKey in keyMap) {
 				embiggen(keyMap[actualKey].kNum);
@@ -768,16 +796,23 @@ $(document).ready(function() { //let's do this!
 				//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
 			}
 			//user switching chord
-			else if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+			else if (scalesMode && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chords[chordMap[actualKey]];
 				$("#chordname").val(currentChord.name);
 			}
 		}
 		else { //functionToggle commands
 			//switch chords in advanced mode with non-numpad numeric keys
-			if (advanced && actualKey in chordMap && chordMap[actualKey] > -1) {
+			if (scalesMode && actualKey in chordMap && chordMap[actualKey] > -1) {
 				currentChord = chordMap[actualKey];
 				$("#chordname").val(currentChord.name);
+			}
+			else if (advanced) {
+				switch (actualKey) {
+					case 83:
+						scalesModeToggle();
+						break;
+				}
 			}
 		}
 	});
