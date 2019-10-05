@@ -2,7 +2,7 @@
 
 A browser-based musical instrument that also makes silly emoji graphics. A soundboard where all samples play in harmony. Emojidrone uses a regular computer keyboard for input. 
 
-**LIVE DEMO: [Click here to play the most recent release at http://emojidrone.party!](http://emojidrone.party)**
+**LIVE DEMO: [Click here to play the most recent release at http://emojidr.one!](http://emojidr.one)**
 
 ## Instructions
 
