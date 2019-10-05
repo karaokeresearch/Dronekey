@@ -248,7 +248,7 @@ var loadInstrument = function() {
 				howlParams = {
 					src: ['samples/' + myAudioFiles[r].filename+".ogg", 'samples/' + myAudioFiles[r].filename+".wav"],
 					stereo: -0.5 + (i * 0.1),
-					volume: 0.2 * myVolume,
+					volume: 0.15 * myVolume,
 					rate: rate
 				};
 				(function(hp, kay) { //stupid closures because javascript was designed by genius morons. 
