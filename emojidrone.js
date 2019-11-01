@@ -32,6 +32,7 @@ var sound = [];
 var chord = "Am";
 var tuna;
 var category = {};
+var instructionsVisible=true;
 
 
 
@@ -291,7 +292,7 @@ function exitHandler() //what happens when you enter or exit full screen
 		$("#mainmenu").css("visibility", "hidden");
 		setTimeout(function(){$("*").css("cursor", "none");},500);		
 	} else {
-		$("#thetitle").html("Emojidrone");
+		//$("#thetitle").html("Emojidrone");
 		$("#mainmenu").css("visibility", "visible");
 		$("*").css("cursor", "default");
 	}
@@ -403,9 +404,30 @@ var toTitleCase = function(str){
 }
 
 
+var toggleSettings = function() {
+
+if ($("#mainmenu").css("visibility")=="visible") {
+		$("#mainmenu").css("visibility", "hidden");
+	} else {
+		//$("#thetitle").html("Emojidrone");
+		$("#mainmenu").css("visibility", "visible");
+	}	
+	
+}
+
 $(document).ready(function() { //let's do this!
 	console.log("ready!");
+	
+	
+	$('body').click(function(e) {
+    var target = $(e.target);
+    console.log(target);
+    if(target.is('#gridzone')) {
+        toggleSettings();
+    }
+});
 
+	$
 	//let's load some instruments!
 	loadInstrument();
 	loadEmoji($("#emojiset").val());
@@ -441,9 +463,13 @@ $(document).ready(function() { //let's do this!
 
 
 	$(document).on('keydown', function(event) { //key is pressed
+		
 		if (document.activeElement.tagName == "BODY") {
 			event.preventDefault();
 		}
+
+
+
 		var actualKey = (event.which);
 
 		if (keyMap[actualKey] > -1) {
@@ -451,6 +477,18 @@ $(document).ready(function() { //let's do this!
 			sound[keyMap[actualKey]].play();
 			//console.log(sound[keyMap[actualKey]]._src); //log instrument name		
 		}
+
+	  if (instructionsVisible==true){
+	
+  		$("#instructions").animate({opacity: 0},2000);
+ 	 		setTimeout(function() {
+	 		$("#instructions").css("display", "none");		
+			},2000);
+	
+			//$("#instructions").css("visibility", "hidden");		
+			instructionsVisible=false;
+		}
+
 	});
 
 

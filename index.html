@@ -35,7 +35,7 @@
 	
 
 	body {
-	    background-color: bisque;
+	    background-color: pink;
 	    margin: 0px;
 	    position: fixed; 
       overflow: hidden;
@@ -62,8 +62,20 @@
 		white-space: nowrap;
 		padding: 1vw;
 		border: 0.3vw solid black;
+		visibility: hidden;
 	}
 
+	#instructions{
+		
+	  opacity: 0.5;
+  width: 50vw ;
+		text-align: center;
+    display: block;
+    float: right;
+    position: absolute;
+    left: 25vw; /*newly added*/
+    top: 25vh;/*newly added*/	
+	}
 
 </style>
 
@@ -71,17 +83,21 @@
 <body>
 	
 	<div id ="gridzone" style="height: 100vh;"></div>
+	<div id ="instructions"><span style="font-size:10vh">Start typing</span>
+			 <br><br><br>
+			<span>click for settings</span>
+	</div>
+	
+	
 	<div class="arbitrary" id="mainmenu"><span id="thetitle" style="font-size:8vh;">Emojidrone</span><br>
-		<span style="font-size:2vh;"><i>start typing!</i></span>
-		<br>
 		<br><b>Chord name:</b> <input type="text" style="width:7vw" id="chordname" value="Am">
 		<button id="playbutton">Go!</button>
 <br>
 	<select id="bodycolor">
 	 	  <option>Lime</option>
 	 	  <option>Black</option>
-	 	  <option>Pink</option>
-	 	  <option selected>Bisque</option>
+	 	  <option selected>Pink</option>
+	 	  <option>Bisque</option>
 	 	  <option>LightGrey</option>
 	 	  <option>White</option>
 		</select>
