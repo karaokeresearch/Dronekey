@@ -446,9 +446,13 @@ $(document).ready(function() { //let's do this!
 	}
 
 
+$("#fullscreen").click(function(event) {			
+		launchIntoFullscreen(document.documentElement); // the whole page
+	});
+	
 
 		$("#playbutton").click(function(event) {
-			launchIntoFullscreen(document.documentElement); // the whole page
+			
 			$('body').css('background-color', $("#bodycolor").val());
 			chord = $("#chordname").val();
 			loadInstrument();
